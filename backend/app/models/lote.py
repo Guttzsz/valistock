@@ -30,7 +30,7 @@ class Lote(Base):
     data_validade: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     data_entrada: Mapped[date] = mapped_column(Date, nullable=False)
     custo_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    status: Mapped[StatusLote] = mapped_column(Enum(StatusLote, name="status_lote"), default=StatusLote.ATIVO, nullable=False, index=True)
+    status: Mapped[StatusLote] = mapped_column(Enum(StatusLote, name="status_lote", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=StatusLote.ATIVO, nullable=False, index=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
     produto = relationship("Produto", back_populates="lotes")

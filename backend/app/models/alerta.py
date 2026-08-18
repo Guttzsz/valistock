@@ -27,7 +27,7 @@ class Alerta(Base):
     empresa_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("empresas.id", ondelete="CASCADE"), nullable=False, index=True)
     produto_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False, index=True)
     lote_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("lotes.id", ondelete="CASCADE"), index=True)
-    tipo: Mapped[TipoAlerta] = mapped_column(Enum(TipoAlerta, name="tipo_alerta"), nullable=False, index=True)
+    tipo: Mapped[TipoAlerta] = mapped_column(Enum(TipoAlerta, name="tipo_alerta", values_callable=lambda enum_cls: [e.value for e in enum_cls]), nullable=False, index=True)
     mensagem: Mapped[str] = mapped_column(String(500), nullable=False)
     data_alerta: Mapped[date] = mapped_column(Date, nullable=False, default=lambda: now().date())
     lido: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)

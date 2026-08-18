@@ -25,7 +25,7 @@ class Usuario(Base):
     email: Mapped[str] = mapped_column(String(150), nullable=False, unique=True, index=True)
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     cargo: Mapped[str | None] = mapped_column(String(100))
-    perfil: Mapped[PerfilUsuario] = mapped_column(Enum(PerfilUsuario, name="perfil_usuario"), default=PerfilUsuario.FUNCIONARIO, nullable=False)
+    perfil: Mapped[PerfilUsuario] = mapped_column(Enum(PerfilUsuario, name="perfil_usuario", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=PerfilUsuario.FUNCIONARIO, nullable=False)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     ultimo_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

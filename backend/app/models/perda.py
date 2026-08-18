@@ -27,7 +27,7 @@ class Perda(Base):
     produto_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("produtos.id", ondelete="CASCADE"), nullable=False, index=True)
     lote_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("lotes.id", ondelete="SET NULL"), index=True)
     quantidade: Mapped[int] = mapped_column(Integer, nullable=False)
-    motivo: Mapped[MotivoPerda] = mapped_column(Enum(MotivoPerda, name="motivo_perda"), nullable=False)
+    motivo: Mapped[MotivoPerda] = mapped_column(Enum(MotivoPerda, name="motivo_perda", values_callable=lambda enum_cls: [e.value for e in enum_cls]), nullable=False)
     valor_unitario: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     valor_total: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     data_perda: Mapped[date] = mapped_column(Date, nullable=False, default=lambda: now().date(), index=True)
