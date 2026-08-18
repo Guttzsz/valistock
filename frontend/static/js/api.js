@@ -1,0 +1,190 @@
+/* ValiStock - cliente da API.
+   API_BASE_URL pode ser sobrescrito antes deste script carregar via:
+   <script>window.VALISTOCK_API_BASE_URL = "https://api.seudominio.com";</script>
+*/
+const API_BASE_URL = window.VALISTOCK_API_BASE_URL || "http://localhost:8000";
+
+const TOKEN_KEY = "valistock_token";
+const USER_KEY = "valistock_user";
+
+const Auth = {
+  getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+  getUser() {
+    const raw = localStorage.getItem(USER_KEY);
+    return raw ? JSON.parse(raw) : null;
+  },
+  setSession(token, usuario) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(usuario));
+  },
+  clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  },
+  isAuthenticated() {
+    return !!this.getToken();
+  },
+  requireAuth() {
+    if (!this.isAuthenticated()) {
+      window.location.href = "login.html";
+    }
+  },
+  logout() {
+    this.clearSession();
+    window.location.href = "login.html";
+  },
+};
+
+class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function apiRequest(path, { method = "GET", body, params, auth = true } = {}) {
+  let url = `${API_BASE_URL}${path}`;
+  if (params) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") query.append(key, value);
+    });
+    const qs = query.toString();
+    if (qs) url += `?${qs}`;
+  }
+
+  const headers = { "Content-Type": "application/json" };
+  if (auth) {
+    const token = Auth.getToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch (networkError) {
+    throw new ApiError("Nao foi possivel conectar ao servidor. Verifique sua internet.", 0);
+  }
+
+  if (response.status === 401 && auth) {
+    Auth.clearSession();
+    window.location.href = "login.html";
+    throw new ApiError("Sessao expirada.", 401);
+  }
+
+  if (response.status === 204) return null;
+
+  let data = null;
+  try {
+    data = await response.json();
+  } catch (e) {
+    data = null;
+  }
+
+  if (!response.ok) {
+    const message = (data && data.detail) || "Ocorreu um erro. Tente novamente.";
+    throw new ApiError(message, response.status);
+  }
+
+  return data;
+}
+
+const Api = {
+  register: (payload) => apiRequest("/api/auth/register", { method: "POST", body: payload, auth: false }),
+  login: (payload) => apiRequest("/api/auth/login", { method: "POST", body: payload, auth: false }),
+  me: () => apiRequest("/api/auth/me"),
+
+  dashboard: () => apiRequest("/api/dashboard"),
+
+  produtos: {
+    list: (params) => apiRequest("/api/produtos", { params }),
+    get: (id) => apiRequest(`/api/produtos/${id}`),
+    create: (payload) => apiRequest("/api/produtos", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/produtos/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/produtos/${id}`, { method: "DELETE" }),
+    porCodigoBarras: (codigo) => apiRequest(`/api/produtos/buscar/codigo-barras/${encodeURIComponent(codigo)}`),
+  },
+
+  lotes: {
+    list: (params) => apiRequest("/api/lotes", { params }),
+    create: (payload) => apiRequest("/api/lotes", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/lotes/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/lotes/${id}`, { method: "DELETE" }),
+    marcarVendido: (id) => apiRequest(`/api/lotes/${id}/marcar-vendido`, { method: "PUT" }),
+  },
+
+  validades: {
+    list: (params) => apiRequest("/api/validades", { params }),
+  },
+
+  alertas: {
+    list: (params) => apiRequest("/api/alertas", { params }),
+    marcarLido: (id) => apiRequest(`/api/alertas/${id}/ler`, { method: "PUT" }),
+    ignorar: (id) => apiRequest(`/api/alertas/${id}/ignorar`, { method: "PUT" }),
+  },
+
+  perdas: {
+    list: (params) => apiRequest("/api/perdas", { params }),
+    create: (payload) => apiRequest("/api/perdas", { method: "POST", body: payload }),
+  },
+
+  relatorios: {
+    perdas: (params) => apiRequest("/api/relatorios/perdas", { params }),
+    risco: () => apiRequest("/api/relatorios/risco"),
+  },
+
+  usuarios: {
+    list: () => apiRequest("/api/usuarios"),
+    create: (payload) => apiRequest("/api/usuarios", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/usuarios/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/usuarios/${id}`, { method: "DELETE" }),
+  },
+
+  configuracoes: {
+    get: () => apiRequest("/api/configuracoes"),
+    update: (payload) => apiRequest("/api/configuracoes", { method: "PUT", body: payload }),
+  },
+
+  empresa: {
+    get: () => apiRequest("/api/empresas/atual"),
+    update: (payload) => apiRequest("/api/empresas/atual", { method: "PUT", body: payload }),
+  },
+
+  subscription: {
+    atual: () => apiRequest("/api/subscriptions/atual"),
+  },
+};
+
+function formatCurrency(value) {
+  const n = Number(value) || 0;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatDate(isoDate) {
+  if (!isoDate) return "-";
+  const [year, month, day] = isoDate.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function toast(message, variant = "success") {
+  const container = document.getElementById("vs-toast-container") || (() => {
+    const el = document.createElement("div");
+    el.id = "vs-toast-container";
+    el.style.cssText = "position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1080;width:min(92vw,380px);";
+    document.body.appendChild(el);
+    return el;
+  })();
+
+  const colors = { success: "#16a34a", danger: "#dc2626", info: "#0f172a" };
+  const toastEl = document.createElement("div");
+  toastEl.textContent = message;
+  toastEl.style.cssText = `background:${colors[variant] || colors.info};color:#fff;padding:0.75rem 1rem;border-radius:10px;margin-bottom:0.5rem;font-size:0.88rem;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,0.2);`;
+  container.appendChild(toastEl);
+  setTimeout(() => toastEl.remove(), 3500);
+}

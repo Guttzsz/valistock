@@ -1,0 +1,383 @@
+:root {
+  --vs-primary: #16a34a;
+  --vs-primary-dark: #15803d;
+  --vs-primary-light: #dcfce7;
+  --vs-dark: #0f172a;
+  --vs-slate: #475569;
+  --vs-slate-light: #94a3b8;
+  --vs-bg: #f4f6f8;
+  --vs-card: #ffffff;
+  --vs-border: #e2e8f0;
+
+  --vs-normal: #16a34a;
+  --vs-atencao: #eab308;
+  --vs-urgente: #f97316;
+  --vs-vence-hoje: #dc2626;
+  --vs-vencido: #7f1d1d;
+
+  --vs-radius: 14px;
+  --vs-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--vs-bg);
+  color: var(--vs-dark);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  padding-bottom: 76px;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* ---------- Top bar ---------- */
+.vs-topbar {
+  background: var(--vs-card);
+  border-bottom: 1px solid var(--vs-border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vs-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--vs-dark);
+}
+
+.vs-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--vs-primary), var(--vs-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.vs-slogan {
+  font-size: 0.72rem;
+  color: var(--vs-slate);
+  font-weight: 500;
+}
+
+/* ---------- Layout ---------- */
+.vs-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.vs-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.vs-page-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 0.15rem;
+}
+
+.vs-page-header p {
+  color: var(--vs-slate);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ---------- Cards ---------- */
+.vs-card {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: var(--vs-radius);
+  box-shadow: var(--vs-shadow);
+  padding: 1.1rem;
+}
+
+.vs-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.vs-kpi {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: var(--vs-radius);
+  box-shadow: var(--vs-shadow);
+  padding: 1rem;
+}
+
+.vs-kpi-label {
+  font-size: 0.78rem;
+  color: var(--vs-slate);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.vs-kpi-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin-top: 0.35rem;
+  color: var(--vs-dark);
+}
+
+.vs-kpi.risk .vs-kpi-value { color: var(--vs-urgente); }
+.vs-kpi.danger .vs-kpi-value { color: var(--vs-vence-hoje); }
+.vs-kpi.good .vs-kpi-value { color: var(--vs-primary); }
+
+/* ---------- Badges ---------- */
+.vs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vs-badge.normal { background: #dcfce7; color: var(--vs-normal); }
+.vs-badge.atencao { background: #fef9c3; color: #a16207; }
+.vs-badge.urgente { background: #ffedd5; color: var(--vs-urgente); }
+.vs-badge.vence_hoje { background: #fee2e2; color: var(--vs-vence-hoje); }
+.vs-badge.vencido { background: #450a0a; color: #fecaca; }
+.vs-badge.estoque_baixo { background: #e0e7ff; color: #4338ca; }
+.vs-badge.neutro { background: #f1f5f9; color: var(--vs-slate); }
+
+/* ---------- Buttons ---------- */
+.btn-vs-primary {
+  background: var(--vs-primary);
+  border-color: var(--vs-primary);
+  color: white;
+  font-weight: 600;
+}
+.btn-vs-primary:hover { background: var(--vs-primary-dark); border-color: var(--vs-primary-dark); color: white; }
+
+.vs-fab {
+  position: fixed;
+  right: 1rem;
+  bottom: 88px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--vs-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4);
+  border: none;
+  z-index: 45;
+}
+
+/* ---------- Tables ---------- */
+.vs-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--vs-radius);
+  border: 1px solid var(--vs-border);
+  background: var(--vs-card);
+}
+
+table.vs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table.vs-table th {
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  background: #f8fafc;
+  color: var(--vs-slate);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--vs-border);
+  white-space: nowrap;
+}
+
+table.vs-table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--vs-border);
+  vertical-align: middle;
+}
+
+table.vs-table tr:last-child td { border-bottom: none; }
+
+/* ---------- Mobile list cards (used instead of tables on small screens) ---------- */
+.vs-list-card {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: var(--vs-radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.6rem;
+  box-shadow: var(--vs-shadow);
+}
+
+.vs-list-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.vs-list-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.vs-list-card-meta {
+  font-size: 0.8rem;
+  color: var(--vs-slate);
+}
+
+/* ---------- Forms / filters ---------- */
+.vs-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.vs-search {
+  flex: 1 1 220px;
+}
+
+/* ---------- Bottom mobile nav ---------- */
+.vs-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--vs-card);
+  border-top: 1px solid var(--vs-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.4rem 0.2rem calc(0.4rem + env(safe-area-inset-bottom));
+  z-index: 50;
+}
+
+.vs-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  color: var(--vs-slate);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.25rem 0.4rem;
+  border-radius: 10px;
+  min-width: 56px;
+}
+
+.vs-nav-item .vs-nav-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.vs-nav-item.active {
+  color: var(--vs-primary);
+}
+
+.vs-nav-item .vs-nav-badge {
+  position: relative;
+}
+
+.vs-nav-item .vs-nav-badge::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  background: var(--vs-vence-hoje);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  display: none;
+}
+
+.vs-nav-item .vs-nav-badge[data-count]:not([data-count="0"])::after {
+  display: block;
+}
+
+/* ---------- Auth pages ---------- */
+.vs-auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: linear-gradient(160deg, #0f172a 0%, #14532d 100%);
+}
+
+.vs-auth-card {
+  background: white;
+  border-radius: 18px;
+  padding: 2rem 1.75rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+}
+
+.vs-auth-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* ---------- Empty state ---------- */
+.vs-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--vs-slate);
+}
+.vs-empty .vs-empty-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+
+/* ---------- Utility ---------- */
+.vs-muted { color: var(--vs-slate); }
+.vs-scan-btn {
+  border: 2px dashed var(--vs-primary);
+  background: var(--vs-primary-light);
+  color: var(--vs-primary-dark);
+  border-radius: var(--vs-radius);
+  padding: 0.9rem;
+  width: 100%;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (min-width: 992px) {
+  .vs-bottom-nav { display: none; }
+  body { padding-bottom: 0; }
+  .vs-fab { bottom: 2rem; }
+}

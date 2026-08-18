@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Relatorios - ValiStock</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="../static/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="vs-topbar" class="vs-topbar"></div>
+
+<div class="vs-container">
+  <div class="vs-page-header">
+    <div>
+      <h1>Relatorios</h1>
+      <p>Entenda onde seu estabelecimento esta perdendo dinheiro.</p>
+    </div>
+  </div>
+
+  <div class="vs-filter-bar">
+    <select class="form-select" style="max-width:200px;" id="filtro-periodo">
+      <option value="hoje">Hoje</option>
+      <option value="7dias">Ultimos 7 dias</option>
+      <option value="30dias" selected>Ultimos 30 dias</option>
+      <option value="90dias">Ultimos 90 dias</option>
+    </select>
+  </div>
+
+  <div id="vs-loading" class="text-center py-5">
+    <div class="spinner-border text-success" role="status"></div>
+  </div>
+
+  <div id="vs-relatorios-content" class="d-none">
+    <div class="vs-kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+      <div class="vs-kpi danger">
+        <div class="vs-kpi-label">Total de perdas no periodo</div>
+        <div class="vs-kpi-value" id="kpi-total-perdas">-</div>
+      </div>
+      <div class="vs-kpi risk">
+        <div class="vs-kpi-label">Total em risco agora</div>
+        <div class="vs-kpi-value" id="kpi-total-risco">-</div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-lg-6">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Perdas por dia</h2>
+          <canvas id="chart-perdas-dia"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Perdas por categoria</h2>
+          <canvas id="chart-categorias"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Produtos que mais geram perdas</h2>
+          <canvas id="chart-produtos"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Produtos proximos do vencimento (valor em risco)</h2>
+          <div id="lista-risco"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="vs-bottom-nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="../static/js/config.js"></script>
+<script src="../static/js/api.js"></script>
+<script src="../static/js/nav.js"></script>
+<script src="../static/js/relatorios.js"></script>
+</body>
+</html>

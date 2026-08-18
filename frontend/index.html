@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ValiStock</title>
+<script>
+  const hasToken = !!localStorage.getItem("valistock_token");
+  window.location.href = hasToken ? "templates/dashboard.html" : "templates/login.html";
+</script>
+</head>
+<body></body>
+</html>
