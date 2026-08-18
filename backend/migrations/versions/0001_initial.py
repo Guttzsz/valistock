@@ -32,7 +32,7 @@ def upgrade() -> None:
         sa.Column("atualizado_em", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
     )
 
-    perfil_usuario = postgresql.ENUM("administrador", "gerente", "funcionario", name="perfil_usuario")
+    perfil_usuario = postgresql.ENUM("administrador", "gerente", "funcionario", name="perfil_usuario", create_type=False)
     perfil_usuario.create(op.get_bind(), checkfirst=True)
     op.create_table(
         "usuarios",
@@ -72,7 +72,7 @@ def upgrade() -> None:
     op.create_index("ix_produtos_codigo_barras", "produtos", ["codigo_barras"])
     op.create_index("ix_produtos_categoria", "produtos", ["categoria"])
 
-    status_lote = postgresql.ENUM("ativo", "proximo_vencimento", "vencido", "esgotado", "perdido", name="status_lote")
+    status_lote = postgresql.ENUM("ativo", "proximo_vencimento", "vencido", "esgotado", "perdido", name="status_lote", create_type=False)
     status_lote.create(op.get_bind(), checkfirst=True)
     op.create_table(
         "lotes",
@@ -93,7 +93,7 @@ def upgrade() -> None:
     op.create_index("ix_lotes_status", "lotes", ["status"])
 
     motivo_perda = postgresql.ENUM(
-        "produto_vencido", "produto_danificado", "armazenamento_inadequado", "erro_de_estoque", "outro", name="motivo_perda"
+        "produto_vencido", "produto_danificado", "armazenamento_inadequado", "erro_de_estoque", "outro", name="motivo_perda", create_type=False
     )
     motivo_perda.create(op.get_bind(), checkfirst=True)
     op.create_table(
@@ -117,7 +117,7 @@ def upgrade() -> None:
     op.create_index("ix_perdas_data_perda", "perdas", ["data_perda"])
 
     tipo_alerta = postgresql.ENUM(
-        "vencimento_7_dias", "vencimento_3_dias", "vencimento_1_dia", "vence_hoje", "vencido", "estoque_baixo", name="tipo_alerta"
+        "vencimento_7_dias", "vencimento_3_dias", "vencimento_1_dia", "vence_hoje", "vencido", "estoque_baixo", name="tipo_alerta", create_type=False
     )
     tipo_alerta.create(op.get_bind(), checkfirst=True)
     op.create_table(
@@ -152,10 +152,10 @@ def upgrade() -> None:
     )
     op.create_index("ix_configuracoes_empresa_id", "configuracoes", ["empresa_id"])
 
-    plano_nome = postgresql.ENUM("gratuito", "basico", "profissional", name="plano_nome")
+    plano_nome = postgresql.ENUM("gratuito", "basico", "profissional", name="plano_nome", create_type=False)
     plano_nome.create(op.get_bind(), checkfirst=True)
     status_assinatura = postgresql.ENUM(
-        "trialing", "active", "past_due", "canceled", "unpaid", "incomplete", name="status_assinatura"
+        "trialing", "active", "past_due", "canceled", "unpaid", "incomplete", name="status_assinatura", create_type=False
     )
     status_assinatura.create(op.get_bind(), checkfirst=True)
     op.create_table(
