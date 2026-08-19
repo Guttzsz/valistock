@@ -4,7 +4,14 @@
 
 SaaS de controle de validade e perdas para pequenos mercados, hortifrutis, padarias e quitandas. O funcionario cadastra produtos e lotes, informa a validade, e o sistema acompanha automaticamente os vencimentos, gerando alertas antes que o produto vire prejuizo.
 
-Este repositorio contem a **Fase 1 (MVP)**: autenticacao, multi-tenancy, produtos, lotes, validades, alertas automaticos, controle de perdas, dashboard, relatorios com graficos e testes automatizados. Codigo de barras (camera), OCR de validade e Stripe estao com a arquitetura preparada mas as integracoes completas ficam para as proximas fases (veja [Roadmap](#roadmap)).
+O repositorio ja passou por duas fases:
+
+- **Fase 1 (MVP)**: autenticacao, multi-tenancy, produtos, lotes, validades, alertas automaticos, controle de perdas, dashboard, relatorios com graficos.
+- **Fase 2 (plataforma configuravel)**: categorias/fornecedores/localizacoes como entidades reais da empresa, permissoes granulares por perfil, auditoria (historico de acoes), rastreabilidade de movimentacao de estoque, campos personalizados por produto, onboarding guiado, preferencias de notificacao/dashboard por usuario, exportacao CSV.
+
+Codigo de barras (camera), OCR de validade e Stripe checkout estao com a arquitetura preparada mas as integracoes completas ficam para as proximas fases (veja [Roadmap](#roadmap)).
+
+**Esta em producao real:** frontend na Vercel, backend no Render, banco no Supabase — nao e so uma demonstracao local.
 
 ## Indice
 
@@ -68,17 +75,21 @@ O frontend fala com o backend exclusivamente via REST + JWT (`Authorization: Bea
 valistock/
 ├── backend/
 │   ├── app/
-│   │   ├── models/        # SQLAlchemy ORM (Empresa, Usuario, Produto, Lote, Perda, Alerta, ...)
+│   │   ├── models/        # SQLAlchemy ORM (Empresa, Usuario, Produto, Lote, Perda, Alerta,
+│   │   │                  #   Categoria, Fornecedor, Localizacao, CampoPersonalizado,
+│   │   │                  #   LogAuditoria, MovimentacaoEstoque, Preferencia*, ...)
 │   │   ├── schemas/       # Pydantic (request/response)
 │   │   ├── routes/        # Endpoints FastAPI, um arquivo por recurso
-│   │   ├── services/      # Regras de negocio (validade, alertas, financeiro, planos, scheduler)
-│   │   ├── auth/          # Hash de senha, JWT, dependencias de autenticacao/autorizacao
+│   │   ├── services/      # Regras de negocio (validade, alertas, financeiro, planos, estoque,
+│   │   │                  #   auditoria, scheduler)
+│   │   ├── auth/          # Hash de senha, JWT, dependencias de autenticacao/autorizacao,
+│   │   │                  #   matriz de permissoes granulares (permissions.py)
 │   │   ├── utils/         # Timezone, excecoes amigaveis, tipo GUID multi-banco
 │   │   ├── config.py      # Configuracao via variaveis de ambiente (pydantic-settings)
 │   │   ├── database.py    # Engine/Session do SQLAlchemy
 │   │   └── main.py        # App FastAPI, CORS, rotas, lifespan (scheduler)
 │   ├── migrations/        # Alembic
-│   ├── tests/              # pytest (44 testes cobrindo auth, multi-tenancy, regras de negocio)
+│   ├── tests/              # pytest (70 testes cobrindo auth, multi-tenancy, regras de negocio)
 │   ├── seed.py             # Popula o banco com a empresa de demonstracao
 │   ├── run.py               # Entry point local (uvicorn)
 │   ├── requirements.txt
@@ -179,16 +190,21 @@ cd backend
 pytest
 ```
 
-44 testes, sem dependencia de um Postgres rodando (usam SQLite em memoria via um tipo `GUID` que e nativo em Postgres e compativel em SQLite). Cobrem:
+70 testes, sem dependencia de um Postgres rodando (usam SQLite em memoria via um tipo `GUID` que e nativo em Postgres e compativel em SQLite). Cobrem:
 
-- cadastro, login, hash de senha, protecao de rotas;
+- cadastro, login, hash de senha, protecao de rotas, troca de senha/perfil;
 - CRUD de produtos e lotes, atualizacao automatica de estoque;
 - calculo de dias restantes e status de validade (normal/atencao/urgente/vence hoje/vencido);
 - geracao de alertas (7/3/1 dias, vence hoje, vencido, estoque baixo) e nao duplicacao;
 - registro de perdas e calculo financeiro (quantidade × custo);
-- **isolamento entre empresas** (uma empresa nunca ve dados de outra) — o requisito de seguranca mais critico do produto;
-- permissoes por perfil (administrador/gerente/funcionario);
+- CRUD de categorias, fornecedores, localizacoes e campos personalizados;
+- auditoria (logs_auditoria) e rastreabilidade de estoque (movimentacoes_estoque);
+- onboarding e preferencias (notificacao/dashboard) persistidos no banco;
+- **isolamento entre empresas** (uma empresa nunca ve dados de outra) — o requisito de seguranca mais critico do produto, testado explicitamente para cada entidade nova;
+- permissoes granulares por perfil (administrador/gerente/funcionario) via `app/auth/permissions.py`;
 - limites de plano (`check_plan_limit`).
+
+Rode `pytest` sempre depois de mudar um model relacionado a enums Postgres — o SQLite dos testes usa CHECK constraints geradas pelo SQLAlchemy a partir do mesmo enum Python, o que pode mascarar incompatibilidades reais com Postgres (ja aconteceu: veja o commit "Fix enum name/value mismatch"). Para validar de verdade contra Postgres antes de um deploy sensivel, rode a suite ou um teste manual apontando `DATABASE_URL` para o Supabase.
 
 ## Endpoints da API
 
@@ -199,21 +215,26 @@ POST   /api/auth/register
 POST   /api/auth/login
 POST   /api/auth/logout
 GET    /api/auth/me
+PUT    /api/auth/perfil
+PUT    /api/auth/senha
+GET    /api/auth/permissoes                   (lista as permissoes do usuario logado; so cosmetico)
 
 GET    /api/empresas/atual
-PUT    /api/empresas/atual                    (admin)
+PUT    /api/empresas/atual                    (empresa.gerenciar)
 
 GET    /api/usuarios
-POST   /api/usuarios                          (admin)
-PUT    /api/usuarios/{id}                     (admin)
-DELETE /api/usuarios/{id}                     (admin)
+POST   /api/usuarios                          (funcionarios.gerenciar)
+PUT    /api/usuarios/{id}                     (funcionarios.gerenciar)
+DELETE /api/usuarios/{id}                     (funcionarios.gerenciar)
 
-GET    /api/produtos?q=&categoria=
+GET    /api/produtos?q=&categoria_id=&fornecedor_id=&localizacao_id=
 POST   /api/produtos
 GET    /api/produtos/{id}
 PUT    /api/produtos/{id}
 DELETE /api/produtos/{id}
 GET    /api/produtos/buscar/codigo-barras/{codigo}
+GET    /api/produtos/{id}/campos-personalizados
+PUT    /api/produtos/{id}/campos-personalizados
 
 GET    /api/lotes?produto_id=
 POST   /api/lotes
@@ -230,37 +251,81 @@ PUT    /api/alertas/{id}/ignorar
 GET    /api/perdas?data_inicio=&data_fim=&produto_id=&motivo=
 POST   /api/perdas
 
+GET    /api/categorias?q=&incluir_inativas=
+POST   /api/categorias                        (categorias.gerenciar)
+PUT    /api/categorias/{id}                   (categorias.gerenciar)
+DELETE /api/categorias/{id}                   (categorias.gerenciar; desativa, nao apaga)
+
+GET    /api/fornecedores?q=&incluir_inativos=
+POST   /api/fornecedores                      (fornecedores.gerenciar)
+PUT    /api/fornecedores/{id}                 (fornecedores.gerenciar)
+DELETE /api/fornecedores/{id}                 (fornecedores.gerenciar)
+
+GET    /api/localizacoes
+POST   /api/localizacoes                      (localizacoes.gerenciar)
+PUT    /api/localizacoes/{id}                 (localizacoes.gerenciar)
+DELETE /api/localizacoes/{id}                 (localizacoes.gerenciar)
+
+GET    /api/campos-personalizados
+POST   /api/campos-personalizados             (configuracoes.gerenciar)
+PUT    /api/campos-personalizados/{id}        (configuracoes.gerenciar)
+DELETE /api/campos-personalizados/{id}        (configuracoes.gerenciar)
+
+GET    /api/historico?usuario_id=&acao=&entidade=&data_inicio=&data_fim=   (auditoria.visualizar)
+GET    /api/historico/estoque?produto_id=                                   (auditoria.visualizar)
+
+GET    /api/preferencias/notificacoes
+PUT    /api/preferencias/notificacoes
+GET    /api/preferencias/dashboard
+PUT    /api/preferencias/dashboard
+
 GET    /api/dashboard
 
 GET    /api/relatorios/perdas?periodo=hoje|7dias|30dias|90dias|personalizado
+GET    /api/relatorios/perdas/exportar?periodo=      (CSV; relatorios.exportar)
 GET    /api/relatorios/risco
 
 GET    /api/configuracoes
-PUT    /api/configuracoes                     (admin)
+PUT    /api/configuracoes/alertas             (configuracoes.gerenciar)
+PUT    /api/configuracoes/empresa             (configuracoes.gerenciar)
+PUT    /api/configuracoes/onboarding          (admin; avanca o fluxo guiado, persiste a cada etapa)
 
 GET    /api/subscriptions/atual
 ```
 
 ## Multi-tenancy e seguranca
 
-- Toda tabela de dados de negocio tem `empresa_id`. Todo endpoint filtra por `current_user.empresa_id`, extraido do JWT no backend — **nunca** de um parametro vindo do cliente.
-- Senhas com hash `bcrypt`, nunca armazenadas em texto puro.
-- Autorizacao por perfil (`administrador`/`gerente`/`funcionario`) via dependencies do FastAPI (`require_admin`, `require_gerente_ou_admin`).
+- Toda tabela de dados de negocio tem `empresa_id`. Todo endpoint filtra por `current_user.empresa_id`, extraido do JWT no backend — **nunca** de um parametro vindo do cliente. Ao criar/editar um produto com `categoria_id`/`fornecedor_id`/`localizacao_id`, o backend confirma que a referencia pertence a mesma empresa antes de aceitar (evita um usuario "colar" o id de uma categoria de outra empresa).
+- Senhas com hash `bcrypt`, nunca armazenadas em texto puro. Troca de senha exige a senha atual.
+- **Permissoes granulares por perfil**, nao apenas 3 niveis fixos: uma matriz centralizada em `app/auth/permissions.py` (`PERMISSOES_POR_PERFIL`) mapeia cada perfil (administrador/gerente/funcionario) para um conjunto de permissoes especificas (`produtos.criar`, `categorias.gerenciar`, `auditoria.visualizar`, etc.). Cada rota declara a permissao que exige via `require_permissao(...)`. O frontend consulta `GET /api/auth/permissoes` so para decidir o que mostrar/esconder na interface — a autorizacao real e **sempre** verificada de novo no backend, em cada request.
+- Toda mutacao relevante (produto, lote, perda, categoria, fornecedor, localizacao, usuario, empresa, configuracao) grava um registro em `logs_auditoria` na mesma transacao — nunca depois, nunca best-effort.
+- Toda alteracao de `produtos.estoque_atual` passa por `app/services/estoque_service.py::ajustar_estoque`, que tambem grava uma linha em `movimentacoes_estoque`. Nao existe um caminho no codigo que altere o estoque silenciosamente.
 - Erros internos nunca vazam stack trace ao usuario (handler global retorna mensagem generica e loga o erro no servidor).
 - Limites de plano centralizados em `app/services/plano_service.py` (`check_plan_limit`), evitando regra de negocio espalhada pelo codigo.
 - `SUPABASE_SERVICE_ROLE_KEY` e as chaves do Stripe existem apenas no backend.
 
 ## Deploy
 
-1. **Banco**: crie um projeto no Supabase, copie a `DATABASE_URL` (modo "connection pooling" para produção) e rode `alembic upgrade head` apontando para ela.
-2. **Backend**: faça deploy do conteúdo de `backend/` num serviço Python (Railway/Render/Fly.io) usando o `Dockerfile` incluído. Configure as variáveis de `.env.example` no painel do serviço.
-3. **Frontend**: aponte um projeto Vercel para a pasta `frontend/`. Ajuste `VALISTOCK_API_BASE_URL` em `frontend/static/js/config.js` para a URL do backend em produção antes do deploy.
-4. Configure `FRONTEND_URL` no backend (usado no CORS em produção) com a URL final da Vercel.
+Instancia atual em producao:
+
+| Camada | Onde | URL |
+|---|---|---|
+| Frontend | Vercel | https://valistock.vercel.app |
+| Backend | Render | https://valistock-backend.onrender.com |
+| Banco | Supabase (Postgres) | projeto `hgaapjgzjapeuxtrydnp` |
+
+Passo a passo para replicar (ou migrar de provedor):
+
+1. **Banco**: crie um projeto no Supabase, copie a `DATABASE_URL` no modo **Session pooler** (a conexao direta e IPv6-only e falha a partir da maioria dos PaaS, que so tem saida IPv4) e rode `alembic upgrade head` apontando para ela.
+2. **Backend**: use o `render.yaml` incluido (Render Blueprint) ou o `Dockerfile` em qualquer servico Python (Railway/Fly.io/VPS). Configure as variaveis de `.env.example` no painel do servico — `DATABASE_URL` e `SECRET_KEY` como secrets.
+3. **Frontend**: aponte um projeto Vercel para a pasta `frontend/`. Ajuste `VALISTOCK_API_BASE_URL` em `frontend/static/js/config.js` para a URL do backend em producao antes do deploy. Confira **Settings → Deployment Protection** esta desativado para producao, senao o site fica inacessivel para visitantes.
+4. Configure `FRONTEND_URL` no backend (usado no CORS em producao) com a URL final da Vercel.
+5. Rode uma migration nova (`alembic upgrade head`) manualmente contra o Supabase antes de fazer deploy de um backend que a exija — o deploy do backend em si nao roda migrations automaticamente hoje.
 
 ## Roadmap
 
-- **Fase 2**: leitura de código de barras via câmera, OCR de validade, promoções, gráficos adicionais.
-- **Fase 3**: Stripe Checkout, Customer Portal, webhooks de assinatura.
-- **Fase 4**: notificações push/e-mail, inteligência preditiva de perdas, integrações com ERP/PDV, app mobile nativo.
+- **Fase 3 (em andamento)**: leitura de codigo de barras via camera, OCR de validade, promocoes.
+- **Fase 4**: Stripe Checkout, Customer Portal, webhooks de assinatura.
+- **Fase 5**: notificacoes push/e-mail (hoje as preferencias ja existem no banco, falta o canal de envio), inteligencia preditiva de perdas, integracoes com ERP/PDV, app mobile nativo, RBAC totalmente dinamico (papeis customizados por empresa, hoje e uma matriz fixa por perfil), personalizacao visual completa (upload de logo via Supabase Storage), busca global, paginacao nas listagens.
 
-A tabela `subscriptions` e os limites por plano (`app/services/plano_service.py`) já existem e retornam plano "gratuito" por padrão; falta apenas o checkout e os webhooks do Stripe para ativar a cobrança.
+A tabela `subscriptions` e os limites por plano (`app/services/plano_service.py`) ja existem e retornam plano "gratuito" por padrao; falta apenas o checkout e os webhooks do Stripe para ativar a cobranca.
