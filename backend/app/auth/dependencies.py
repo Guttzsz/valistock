@@ -22,6 +22,7 @@ class CurrentUser:
         self.perfil: PerfilUsuario = usuario.perfil
         self.nome: str = usuario.nome
         self.email: str = usuario.email
+        self.super_admin: bool = usuario.super_admin
 
 
 def get_current_user(
@@ -69,3 +70,11 @@ def require_permissao(permissao: Permissao):
         return current_user
 
     return _check
+
+
+def require_super_admin(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+    """Acesso cross-tenant (financeiro consolidado da plataforma ValiStock). Ortogonal ao perfil
+    dentro de uma empresa: um administrador comum de uma empresa NUNCA passa aqui."""
+    if not current_user.super_admin:
+        raise PermissionDeniedError()
+    return current_user

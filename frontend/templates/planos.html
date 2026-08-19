@@ -18,13 +18,20 @@
     </div>
   </div>
 
+  <div id="vs-alerta-pagamento" class="alert alert-danger d-none">
+    ⚠️ Há um problema com o pagamento da sua assinatura.
+    <button class="btn btn-sm btn-outline-danger ms-2" id="btn-atualizar-pagamento">Atualizar pagamento</button>
+  </div>
+
   <div class="vs-card mb-3">
     <div class="vs-kpi-label">Seu plano atual</div>
     <div class="vs-kpi-value" id="plano-atual" style="text-transform:capitalize;">-</div>
     <div class="vs-muted small mt-1" id="plano-limites"></div>
+    <div class="vs-muted small mt-1" id="plano-proxima-cobranca"></div>
+    <button class="btn btn-sm btn-outline-secondary mt-2 d-none" id="btn-portal">Gerenciar assinatura (Stripe)</button>
   </div>
 
-  <div class="row g-3">
+  <div class="row g-3 mb-3">
     <div class="col-12 col-md-4">
       <div class="vs-card h-100 d-flex flex-column">
         <h2 class="h6">Gratuito</h2>
@@ -34,32 +41,42 @@
           <li>Ate 3 usuarios</li>
           <li>Alertas de vencimento</li>
         </ul>
-        <button class="btn btn-outline-secondary" disabled>Plano atual</button>
+        <button class="btn btn-outline-secondary" id="btn-plano-gratuito" disabled>Plano atual</button>
       </div>
     </div>
     <div class="col-12 col-md-4">
       <div class="vs-card h-100 d-flex flex-column border-success">
         <h2 class="h6">Basico</h2>
-        <div class="h4 fw-bold mb-2">Sob consulta<span class="fs-6 fw-normal vs-muted">/mes</span></div>
+        <div class="h4 fw-bold mb-2">R$ 49,90<span class="fs-6 fw-normal vs-muted">/mes</span></div>
         <ul class="small vs-muted flex-grow-1">
           <li>Ate 500 produtos</li>
           <li>Ate 15 usuarios</li>
           <li>Relatorios avancados</li>
         </ul>
-        <button class="btn btn-vs-primary" onclick="avisoStripeIndisponivel()">Assinar</button>
+        <button class="btn btn-vs-primary" id="btn-plano-basico" onclick="assinarPlano('basico')">Assinar</button>
       </div>
     </div>
     <div class="col-12 col-md-4">
       <div class="vs-card h-100 d-flex flex-column">
         <h2 class="h6">Profissional</h2>
-        <div class="h4 fw-bold mb-2">Sob consulta<span class="fs-6 fw-normal vs-muted">/mes</span></div>
+        <div class="h4 fw-bold mb-2">R$ 99,90<span class="fs-6 fw-normal vs-muted">/mes</span></div>
         <ul class="small vs-muted flex-grow-1">
           <li>Produtos e usuarios ilimitados</li>
           <li>Relatorios avancados</li>
           <li>Recursos futuros inclusos</li>
         </ul>
-        <button class="btn btn-vs-primary" onclick="avisoStripeIndisponivel()">Assinar</button>
+        <button class="btn btn-vs-primary" id="btn-plano-profissional" onclick="assinarPlano('profissional')">Assinar</button>
       </div>
+    </div>
+  </div>
+
+  <div class="vs-card">
+    <h2 class="h6 mb-3">Faturas recentes</h2>
+    <div class="vs-table-wrap">
+      <table class="vs-table" id="tabela-faturas">
+        <thead><tr><th>Numero</th><th>Valor</th><th>Status</th><th>Data</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -73,21 +90,84 @@
 <script>
   initNav("mais");
 
-  function avisoStripeIndisponivel() {
-    toast("Pagamentos via Stripe serao habilitados em uma proxima fase do produto.", "info");
+  const FATURA_STATUS_LABELS = { paga: "Paga", pendente: "Pendente", falhou: "Falhou", reembolsada: "Reembolsada" };
+
+  window.assinarPlano = async function (plano) {
+    try {
+      const { url } = await Api.subscription.checkout(plano);
+      window.location.href = url;
+    } catch (err) {
+      toast(err.message || "Nao foi possivel iniciar o checkout.", "danger");
+    }
+  };
+
+  async function abrirPortal() {
+    try {
+      const { url } = await Api.subscription.portal();
+      window.location.href = url;
+    } catch (err) {
+      toast(err.message || "Nao foi possivel abrir o portal de gerenciamento.", "danger");
+    }
   }
 
-  (async function () {
+  document.getElementById("btn-portal").addEventListener("click", abrirPortal);
+  document.getElementById("btn-atualizar-pagamento").addEventListener("click", abrirPortal);
+
+  async function carregar() {
     try {
-      const sub = await Api.subscription.atual();
+      const [sub, faturas] = await Promise.all([Api.subscription.atual(), Api.subscription.faturas()]);
+
       document.getElementById("plano-atual").textContent = sub.plano;
       const produtos = sub.limite_produtos === null ? "ilimitados" : sub.limite_produtos;
       const usuarios = sub.limite_usuarios === null ? "ilimitados" : sub.limite_usuarios;
       document.getElementById("plano-limites").textContent = `Ate ${produtos} produtos · Ate ${usuarios} usuarios · status: ${sub.status}`;
+
+      if (sub.periodo_atual_fim) {
+        const texto = sub.cancelar_ao_fim_periodo
+          ? `Sua assinatura sera cancelada em ${formatDate(sub.periodo_atual_fim)}.`
+          : `Proxima cobranca: ${formatDate(sub.periodo_atual_fim)} (${formatCurrency(sub.valor_mensal)})`;
+        document.getElementById("plano-proxima-cobranca").textContent = texto;
+      }
+
+      if (sub.possui_stripe) {
+        document.getElementById("btn-portal").classList.remove("d-none");
+      }
+
+      if (sub.status === "past_due" || sub.status === "unpaid") {
+        document.getElementById("vs-alerta-pagamento").classList.remove("d-none");
+      }
+
+      ["gratuito", "basico", "profissional"].forEach((p) => {
+        const btn = document.getElementById(`btn-plano-${p}`);
+        if (p === sub.plano) {
+          btn.textContent = "Plano atual";
+          btn.disabled = true;
+          btn.classList.remove("btn-vs-primary");
+          btn.classList.add("btn-outline-secondary");
+        }
+      });
+
+      document.querySelector("#tabela-faturas tbody").innerHTML = faturas.length
+        ? faturas.map((f) => `
+          <tr>
+            <td>${f.numero || "-"}</td>
+            <td>${formatCurrency(f.valor_total)}</td>
+            <td><span class="vs-badge ${f.status === "paga" ? "normal" : f.status === "falhou" ? "vencido" : "neutro"}">${FATURA_STATUS_LABELS[f.status] || f.status}</span></td>
+            <td>${new Date(f.criado_em).toLocaleDateString("pt-BR")}</td>
+            <td>${f.url_fatura ? `<a href="${f.url_fatura}" target="_blank" rel="noopener">Ver</a>` : ""}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="5" class="text-center py-4 vs-muted">Nenhuma fatura ainda.</td></tr>`;
     } catch (err) {
       toast(err.message || "Erro ao carregar assinatura.", "danger");
     }
-  })();
+  }
+
+  carregar();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("status") === "success") toast("Assinatura confirmada! Pode levar alguns segundos para atualizar.");
+  if (params.get("status") === "cancel") toast("Checkout cancelado.", "info");
 </script>
 </body>
 </html>

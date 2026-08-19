@@ -37,6 +37,7 @@ class UsuarioMe(BaseModel):
     nome: str
     email: EmailStr
     perfil: str
+    super_admin: bool = False
 
     model_config = {"from_attributes": True}
 

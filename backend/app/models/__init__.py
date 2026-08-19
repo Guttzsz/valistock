@@ -4,6 +4,8 @@ from app.models.campo_personalizado import CampoPersonalizado, TipoCampoPersonal
 from app.models.categoria import Categoria
 from app.models.configuracao import Configuracao
 from app.models.empresa import Empresa
+from app.models.evento_stripe import EventoStripe
+from app.models.fatura import Fatura, StatusFatura
 from app.models.fornecedor import Fornecedor
 from app.models.localizacao import Localizacao
 from app.models.lote import Lote, StatusLote
@@ -11,6 +13,7 @@ from app.models.movimentacao_estoque import MovimentacaoEstoque, TipoMovimentaca
 from app.models.perda import MotivoPerda, Perda
 from app.models.preferencia import PreferenciaDashboard, PreferenciaNotificacao
 from app.models.produto import Produto
+from app.models.reembolso import Reembolso
 from app.models.subscription import PlanoNome, StatusAssinatura, Subscription
 from app.models.usuario import PerfilUsuario, Usuario
 
@@ -24,6 +27,9 @@ __all__ = [
     "Categoria",
     "Configuracao",
     "Empresa",
+    "EventoStripe",
+    "Fatura",
+    "StatusFatura",
     "Fornecedor",
     "Localizacao",
     "Lote",
@@ -35,6 +41,7 @@ __all__ = [
     "PreferenciaDashboard",
     "PreferenciaNotificacao",
     "Produto",
+    "Reembolso",
     "PlanoNome",
     "StatusAssinatura",
     "Subscription",

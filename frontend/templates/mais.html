@@ -72,6 +72,12 @@
       <span>→</span>
     </a>
   </div>
+  <div class="vs-card mb-2 d-none" id="card-financeiro">
+    <a href="financeiro.html" class="d-flex justify-content-between align-items-center text-decoration-none text-dark py-1">
+      <div><div class="fw-semibold">💼 Financeiro (plataforma)</div><div class="vs-muted small">Receita consolidada de todos os clientes</div></div>
+      <span>→</span>
+    </a>
+  </div>
   <div class="vs-card">
     <a href="#" id="link-sair" class="d-flex justify-content-between align-items-center text-decoration-none text-danger py-1">
       <div class="fw-semibold">🚪 Sair</div>
@@ -88,6 +94,9 @@
 <script src="../static/js/nav.js"></script>
 <script>
   initNav("mais");
+  if (Auth.getUser()?.super_admin) {
+    document.getElementById("card-financeiro").classList.remove("d-none");
+  }
   document.getElementById("link-sair").addEventListener("click", (e) => {
     e.preventDefault();
     Auth.logout();

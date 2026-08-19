@@ -180,6 +180,18 @@ const Api = {
 
   subscription: {
     atual: () => apiRequest("/api/subscriptions/atual"),
+    faturas: () => apiRequest("/api/subscriptions/faturas"),
+    checkout: (plano) => apiRequest("/api/subscriptions/checkout", { method: "POST", body: { plano } }),
+    portal: () => apiRequest("/api/subscriptions/portal", { method: "POST" }),
+  },
+
+  financeiro: {
+    dashboard: () => apiRequest("/api/financeiro/dashboard"),
+    receitaMensal: () => apiRequest("/api/financeiro/receita-mensal"),
+    receitaPorPlano: () => apiRequest("/api/financeiro/receita-por-plano"),
+    assinaturas: () => apiRequest("/api/financeiro/assinaturas"),
+    pagamentos: () => apiRequest("/api/financeiro/pagamentos"),
+    sincronizar: (empresaId) => apiRequest(`/api/financeiro/sincronizar/${empresaId}`, { method: "POST" }),
   },
 
   categorias: {

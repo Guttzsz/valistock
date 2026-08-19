@@ -22,16 +22,21 @@ const MAIS_ITEMS = [
   { href: "configuracoes.html", label: "⚙️ Configuracoes", key: "configuracoes" },
 ];
 
+function itensMais(usuario) {
+  return usuario?.super_admin ? [...MAIS_ITEMS, { href: "financeiro.html", label: "💼 Financeiro (plataforma)", key: "financeiro" }] : MAIS_ITEMS;
+}
+
 function renderTopbar(activeKey) {
   const el = document.getElementById("vs-topbar");
   if (!el) return;
   const usuario = Auth.getUser();
+  const itens = itensMais(usuario);
 
   const linksDesktop = NAV_ITEMS.slice(0, 4).map((item) => `
     <a href="${item.href}" class="vs-desktop-link ${item.key === activeKey ? "active" : ""}">${item.icon} ${item.label}</a>
   `).join("");
 
-  const maisAtivo = MAIS_ITEMS.some((i) => i.key === activeKey) || activeKey === "mais";
+  const maisAtivo = itens.some((i) => i.key === activeKey) || activeKey === "mais";
 
   el.innerHTML = `
     <div class="vs-topbar-left">
@@ -47,7 +52,7 @@ function renderTopbar(activeKey) {
         <div class="dropdown">
           <a href="#" class="vs-desktop-link ${maisAtivo ? "active" : ""}" data-bs-toggle="dropdown" aria-expanded="false">☰ Mais</a>
           <ul class="dropdown-menu">
-            ${MAIS_ITEMS.map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`).join("")}
+            ${itens.map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`).join("")}
           </ul>
         </div>
       </nav>

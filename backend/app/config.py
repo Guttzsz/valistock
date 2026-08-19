@@ -25,8 +25,8 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_price_basic: str = ""
     stripe_price_pro: str = ""
-    stripe_success_url: str = "http://localhost:5500/planos?status=success"
-    stripe_cancel_url: str = "http://localhost:5500/planos?status=cancel"
+    stripe_success_url: str = "http://localhost:5500/templates/planos.html?status=success"
+    stripe_cancel_url: str = "http://localhost:5500/templates/planos.html?status=cancel"
 
     @property
     def is_production(self) -> bool:

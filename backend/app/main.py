@@ -14,6 +14,7 @@ from app.routes import (
     configuracoes,
     dashboard,
     empresas,
+    financeiro,
     fornecedores,
     historico,
     localizacoes,
@@ -22,6 +23,7 @@ from app.routes import (
     preferencias,
     produtos,
     relatorios,
+    stripe_webhook,
     subscriptions,
     usuarios,
     validades,
@@ -81,6 +83,8 @@ app.include_router(localizacoes.router)
 app.include_router(campos_personalizados.router)
 app.include_router(historico.router)
 app.include_router(preferencias.router)
+app.include_router(financeiro.router)
+app.include_router(stripe_webhook.router)
 
 
 @app.get("/", tags=["health"])

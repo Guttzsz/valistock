@@ -20,3 +20,17 @@ services:
         value: "1440"
       - key: FRONTEND_URL
         value: https://valistock.vercel.app
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_BASIC
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_SUCCESS_URL
+        value: https://valistock.vercel.app/templates/planos.html?status=success
+      - key: STRIPE_CANCEL_URL
+        value: https://valistock.vercel.app/templates/planos.html?status=cancel

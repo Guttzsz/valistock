@@ -2,11 +2,19 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import CurrentUser, get_current_user
+from app.auth.dependencies import CurrentUser, get_current_user, require_permissao
+from app.auth.permissions import Permissao
+from app.config import get_settings
 from app.database import get_db
+from app.models.empresa import Empresa
+from app.models.fatura import Fatura
 from app.models.subscription import StatusAssinatura, Subscription
-from app.schemas.subscription import SubscriptionOut
+from app.schemas.subscription import CheckoutRequest, CheckoutResponse, FaturaOut, PortalResponse, SubscriptionOut
+from app.services import stripe_service
 from app.services.plano_service import LIMITES, get_plano_atual
+from app.utils.exceptions import ValidationErrorApp
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/subscriptions", tags=["subscriptions"])
 
@@ -15,6 +23,44 @@ router = APIRouter(prefix="/api/subscriptions", tags=["subscriptions"])
 def obter_assinatura_atual(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
     plano = get_plano_atual(db, current_user.empresa_id)
     sub = db.scalar(select(Subscription).where(Subscription.empresa_id == current_user.empresa_id))
-    status = sub.status if sub else StatusAssinatura.ACTIVE
     limites = LIMITES[plano]
-    return SubscriptionOut(plano=plano, status=status, limite_produtos=limites["products"], limite_usuarios=limites["users"])
+    return SubscriptionOut(
+        plano=plano,
+        status=sub.status if sub else StatusAssinatura.ACTIVE,
+        limite_produtos=limites["products"],
+        limite_usuarios=limites["users"],
+        valor_mensal=sub.valor_mensal if sub else 0,
+        periodo_atual_fim=sub.periodo_atual_fim if sub else None,
+        trial_fim=sub.trial_fim if sub else None,
+        cancelar_ao_fim_periodo=sub.cancelar_ao_fim_periodo if sub else False,
+        possui_stripe=bool(sub and sub.stripe_customer_id),
+    )
+
+
+@router.get("/faturas", response_model=list[FaturaOut])
+def listar_faturas(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    stmt = select(Fatura).where(Fatura.empresa_id == current_user.empresa_id).order_by(Fatura.criado_em.desc()).limit(24)
+    return db.scalars(stmt).all()
+
+
+@router.post("/checkout", response_model=CheckoutResponse)
+def criar_checkout(
+    payload: CheckoutRequest, current_user: CurrentUser = Depends(require_permissao(Permissao.ASSINATURA_GERENCIAR)), db: Session = Depends(get_db)
+):
+    price_map = {"basico": settings.stripe_price_basic, "profissional": settings.stripe_price_pro}
+    price_id = price_map.get(payload.plano)
+    if not price_id:
+        raise ValidationErrorApp("Plano invalido. Escolha 'basico' ou 'profissional'.")
+    if not settings.stripe_secret_key:
+        raise ValidationErrorApp("Pagamentos ainda nao configurados neste ambiente.")
+
+    empresa = db.get(Empresa, current_user.empresa_id)
+    url = stripe_service.criar_checkout_session(db, empresa, price_id)
+    return CheckoutResponse(url=url)
+
+
+@router.post("/portal", response_model=PortalResponse)
+def criar_portal(current_user: CurrentUser = Depends(require_permissao(Permissao.ASSINATURA_GERENCIAR)), db: Session = Depends(get_db)):
+    empresa = db.get(Empresa, current_user.empresa_id)
+    url = stripe_service.criar_portal_session(db, empresa)
+    return PortalResponse(url=url)

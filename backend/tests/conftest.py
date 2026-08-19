@@ -2,6 +2,10 @@ import os
 
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key"
+os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake_for_pytest"
+os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_secret_for_pytest"
+os.environ["STRIPE_PRICE_BASIC"] = "price_test_basico"
+os.environ["STRIPE_PRICE_PRO"] = "price_test_profissional"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -69,3 +73,24 @@ def registrar_empresa(client, sufixo="a"):
 
 def auth_headers(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
+
+
+def tornar_super_admin(db_session, email: str) -> None:
+    from app.models.usuario import Usuario
+
+    usuario = db_session.query(Usuario).filter(Usuario.email == email).first()
+    usuario.super_admin = True
+    db_session.commit()
+
+
+def assinar_webhook_stripe(payload: bytes, secret: str = "whsec_test_secret_for_pytest") -> str:
+    """Gera uma assinatura Stripe-Signature valida, no mesmo formato que o Stripe usa de verdade,
+    para testar a verificacao de assinatura do endpoint de webhook sem precisar de um servidor Stripe real."""
+    import hashlib
+    import hmac
+    import time
+
+    timestamp = str(int(time.time()))
+    signed_payload = f"{timestamp}.{payload.decode()}"
+    signature = hmac.new(secret.encode(), signed_payload.encode(), hashlib.sha256).hexdigest()
+    return f"t={timestamp},v1={signature}"

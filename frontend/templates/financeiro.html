@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Financeiro - ValiStock</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="../static/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="vs-topbar" class="vs-topbar"></div>
+
+<div class="vs-container">
+  <div class="vs-page-header">
+    <div>
+      <h1>Financeiro</h1>
+      <p>Receita consolidada de todos os clientes do ValiStock (dados sincronizados do Stripe).</p>
+    </div>
+  </div>
+
+  <div id="vs-loading" class="text-center py-5">
+    <div class="spinner-border text-success" role="status"></div>
+  </div>
+
+  <div id="vs-financeiro-content" class="d-none">
+    <div class="vs-kpi-grid">
+      <div class="vs-kpi good">
+        <div class="vs-kpi-label">💰 Receita mensal</div>
+        <div class="vs-kpi-value" id="kpi-receita-mensal">-</div>
+      </div>
+      <div class="vs-kpi good">
+        <div class="vs-kpi-label">🔁 MRR</div>
+        <div class="vs-kpi-value" id="kpi-mrr">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">📅 Receita anual</div>
+        <div class="vs-kpi-value" id="kpi-receita-anual">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">📈 ARR</div>
+        <div class="vs-kpi-value" id="kpi-arr">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">✅ Assinaturas ativas</div>
+        <div class="vs-kpi-value" id="kpi-assinaturas-ativas">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">👥 Clientes pagantes</div>
+        <div class="vs-kpi-value" id="kpi-clientes-pagantes">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">🆓 Em trial</div>
+        <div class="vs-kpi-value" id="kpi-trials">-</div>
+      </div>
+      <div class="vs-kpi danger">
+        <div class="vs-kpi-label">🚫 Cancelamentos (mes)</div>
+        <div class="vs-kpi-value" id="kpi-cancelamentos">-</div>
+      </div>
+      <div class="vs-kpi risk">
+        <div class="vs-kpi-label">⚠️ Inadimplencia</div>
+        <div class="vs-kpi-value" id="kpi-inadimplencia">-</div>
+      </div>
+      <div class="vs-kpi">
+        <div class="vs-kpi-label">🎯 ARPU</div>
+        <div class="vs-kpi-value" id="kpi-arpu">-</div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-12 col-lg-7">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Receita nos ultimos 12 meses</h2>
+          <canvas id="chart-receita-mensal"></canvas>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="vs-card">
+          <h2 class="h6 mb-3">Assinaturas por plano</h2>
+          <canvas id="chart-clientes-plano"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="vs-card mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0">Assinaturas</h2>
+      </div>
+      <div class="vs-table-wrap">
+        <table class="vs-table" id="tabela-assinaturas">
+          <thead>
+            <tr><th>Empresa</th><th>Plano</th><th>Status</th><th>Valor/mes</th><th>Proxima cobranca</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="vs-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0">Ultimos pagamentos</h2>
+      </div>
+      <div class="vs-table-wrap">
+        <table class="vs-table" id="tabela-pagamentos">
+          <thead>
+            <tr><th>Empresa</th><th>Numero</th><th>Valor</th><th>Status</th><th>Data</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="vs-bottom-nav"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="../static/js/config.js"></script>
+<script src="../static/js/api.js"></script>
+<script src="../static/js/nav.js"></script>
+<script src="../static/js/financeiro.js"></script>
+</body>
+</html>
