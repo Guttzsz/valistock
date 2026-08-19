@@ -71,4 +71,13 @@ async function carregarRelatorios() {
 
 document.getElementById("filtro-periodo").addEventListener("change", carregarRelatorios);
 
+document.getElementById("btn-exportar-csv").addEventListener("click", async () => {
+  const periodo = document.getElementById("filtro-periodo").value;
+  try {
+    await Api.relatorios.exportarPerdasCsv({ periodo });
+  } catch (err) {
+    toast(err.message || "Nao foi possivel exportar o relatorio.", "danger");
+  }
+});
+
 carregarRelatorios();

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Fornecedores - ValiStock</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="../static/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div id="vs-topbar" class="vs-topbar"></div>
+
+<div class="vs-container">
+  <div class="vs-page-header">
+    <div>
+      <h1>Fornecedores</h1>
+      <p>Cadastre e acompanhe seus fornecedores.</p>
+    </div>
+    <button class="btn btn-vs-primary" data-bs-toggle="modal" data-bs-target="#modal-fornecedor" id="btn-novo">+ Novo fornecedor</button>
+  </div>
+
+  <input type="search" class="form-control mb-3" id="busca" placeholder="Buscar fornecedor...">
+
+  <div id="vs-loading" class="text-center py-5">
+    <div class="spinner-border text-success" role="status"></div>
+  </div>
+  <div id="vs-lista" class="d-none"></div>
+</div>
+
+<div id="vs-bottom-nav"></div>
+
+<div class="modal fade" id="modal-fornecedor" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-title">Novo fornecedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="form-fornecedor">
+        <div class="modal-body">
+          <input type="hidden" id="fornecedor-id">
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Nome *</label>
+            <input type="text" class="form-control" id="fornecedor-nome" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Razao social</label>
+            <input type="text" class="form-control" id="fornecedor-razao">
+          </div>
+          <div class="row g-2">
+            <div class="col-6">
+              <label class="form-label small fw-semibold">CNPJ</label>
+              <input type="text" class="form-control" id="fornecedor-cnpj">
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-semibold">Telefone</label>
+              <input type="text" class="form-control" id="fornecedor-telefone">
+            </div>
+          </div>
+          <div class="mb-2 mt-2">
+            <label class="form-label small fw-semibold">Email</label>
+            <input type="email" class="form-control" id="fornecedor-email">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Endereco</label>
+            <input type="text" class="form-control" id="fornecedor-endereco">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-semibold">Observacao</label>
+            <textarea class="form-control" id="fornecedor-observacao" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-vs-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../static/js/config.js"></script>
+<script src="../static/js/api.js"></script>
+<script src="../static/js/nav.js"></script>
+<script src="../static/js/fornecedores.js"></script>
+</body>
+</html>

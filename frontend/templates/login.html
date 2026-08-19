@@ -60,7 +60,17 @@
         senha: document.getElementById("senha").value,
       });
       Auth.setSession(data.access_token, data.usuario);
-      window.location.href = "dashboard.html";
+
+      let destino = "dashboard.html";
+      if (data.usuario.perfil === "administrador") {
+        try {
+          const config = await Api.configuracoes.get();
+          if (!config.onboarding_concluido) destino = "onboarding.html";
+        } catch (e) {
+          // se a checagem falhar, segue para o dashboard normalmente
+        }
+      }
+      window.location.href = destino;
     } catch (err) {
       alertBox.textContent = err.message || "Nao foi possivel entrar.";
       alertBox.classList.remove("d-none");

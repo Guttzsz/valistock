@@ -99,6 +99,9 @@ const Api = {
   register: (payload) => apiRequest("/api/auth/register", { method: "POST", body: payload, auth: false }),
   login: (payload) => apiRequest("/api/auth/login", { method: "POST", body: payload, auth: false }),
   me: () => apiRequest("/api/auth/me"),
+  permissoes: () => apiRequest("/api/auth/permissoes"),
+  atualizarPerfil: (payload) => apiRequest("/api/auth/perfil", { method: "PUT", body: payload }),
+  trocarSenha: (payload) => apiRequest("/api/auth/senha", { method: "PUT", body: payload }),
 
   dashboard: () => apiRequest("/api/dashboard"),
 
@@ -137,6 +140,23 @@ const Api = {
   relatorios: {
     perdas: (params) => apiRequest("/api/relatorios/perdas", { params }),
     risco: () => apiRequest("/api/relatorios/risco"),
+    exportarPerdasCsv: async (params) => {
+      const query = new URLSearchParams(params || {}).toString();
+      const response = await fetch(`${API_BASE_URL}/api/relatorios/perdas/exportar${query ? `?${query}` : ""}`, {
+        headers: { Authorization: `Bearer ${Auth.getToken()}` },
+      });
+      if (!response.ok) throw new ApiError("Nao foi possivel exportar o relatorio.", response.status);
+      const blob = await response.blob();
+      const nome = (response.headers.get("Content-Disposition") || "").match(/filename="(.+)"/)?.[1] || "perdas.csv";
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nome;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    },
   },
 
   usuarios: {
@@ -148,7 +168,9 @@ const Api = {
 
   configuracoes: {
     get: () => apiRequest("/api/configuracoes"),
-    update: (payload) => apiRequest("/api/configuracoes", { method: "PUT", body: payload }),
+    atualizarAlertas: (payload) => apiRequest("/api/configuracoes/alertas", { method: "PUT", body: payload }),
+    atualizarEmpresa: (payload) => apiRequest("/api/configuracoes/empresa", { method: "PUT", body: payload }),
+    atualizarOnboarding: (payload) => apiRequest("/api/configuracoes/onboarding", { method: "PUT", body: payload }),
   },
 
   empresa: {
@@ -158,6 +180,48 @@ const Api = {
 
   subscription: {
     atual: () => apiRequest("/api/subscriptions/atual"),
+  },
+
+  categorias: {
+    list: (params) => apiRequest("/api/categorias", { params }),
+    create: (payload) => apiRequest("/api/categorias", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/categorias/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/categorias/${id}`, { method: "DELETE" }),
+  },
+
+  fornecedores: {
+    list: (params) => apiRequest("/api/fornecedores", { params }),
+    create: (payload) => apiRequest("/api/fornecedores", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/fornecedores/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/fornecedores/${id}`, { method: "DELETE" }),
+  },
+
+  localizacoes: {
+    list: (params) => apiRequest("/api/localizacoes", { params }),
+    create: (payload) => apiRequest("/api/localizacoes", { method: "POST", body: payload }),
+    update: (id, payload) => apiRequest(`/api/localizacoes/${id}`, { method: "PUT", body: payload }),
+    remove: (id) => apiRequest(`/api/localizacoes/${id}`, { method: "DELETE" }),
+  },
+
+  camposPersonalizados: {
+    list: () => apiRequest("/api/campos-personalizados"),
+    create: (payload) => apiRequest("/api/campos-personalizados", { method: "POST", body: payload }),
+    remove: (id) => apiRequest(`/api/campos-personalizados/${id}`, { method: "DELETE" }),
+    valoresDoProduto: (produtoId) => apiRequest(`/api/produtos/${produtoId}/campos-personalizados`),
+    definirValoresDoProduto: (produtoId, payload) =>
+      apiRequest(`/api/produtos/${produtoId}/campos-personalizados`, { method: "PUT", body: payload }),
+  },
+
+  historico: {
+    list: (params) => apiRequest("/api/historico", { params }),
+    estoque: (params) => apiRequest("/api/historico/estoque", { params }),
+  },
+
+  preferencias: {
+    getNotificacoes: () => apiRequest("/api/preferencias/notificacoes"),
+    atualizarNotificacoes: (payload) => apiRequest("/api/preferencias/notificacoes", { method: "PUT", body: payload }),
+    getDashboard: () => apiRequest("/api/preferencias/dashboard"),
+    atualizarDashboard: (payload) => apiRequest("/api/preferencias/dashboard", { method: "PUT", body: payload }),
   },
 };
 

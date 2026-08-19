@@ -77,7 +77,7 @@
         admin_senha: document.getElementById("admin_senha").value,
       });
       Auth.setSession(data.access_token, data.usuario);
-      window.location.href = "dashboard.html";
+      window.location.href = "onboarding.html";
     } catch (err) {
       alertBox.textContent = err.message || "Nao foi possivel criar a conta.";
       alertBox.classList.remove("d-none");

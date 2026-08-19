@@ -39,7 +39,7 @@
     </form>
   </div>
 
-  <div class="vs-card">
+  <div class="vs-card mb-3">
     <h2 class="h6 mb-3">Dados do estabelecimento</h2>
     <form id="form-empresa">
       <div class="mb-2">
@@ -75,6 +75,96 @@
         </div>
       </div>
       <button type="submit" class="btn btn-vs-primary mt-3">Salvar dados</button>
+    </form>
+  </div>
+
+  <div class="vs-card mb-3">
+    <h2 class="h6 mb-3">Identidade do estabelecimento</h2>
+    <form id="form-identidade">
+      <div class="row g-2">
+        <div class="col-6">
+          <label class="form-label small fw-semibold">Tipo de estabelecimento</label>
+          <select class="form-select" id="config-tipo">
+            <option value="mercado">Mercado</option>
+            <option value="hortifruti">Hortifruti</option>
+            <option value="padaria">Padaria</option>
+            <option value="quitanda">Quitanda</option>
+            <option value="acougue">Acougue</option>
+            <option value="conveniencia">Conveniencia</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label small fw-semibold">Cor principal</label>
+          <input type="color" class="form-control form-control-color w-100" id="config-cor">
+        </div>
+      </div>
+      <div class="mb-2 mt-2">
+        <label class="form-label small fw-semibold">Horario de funcionamento</label>
+        <input type="text" class="form-control" id="config-horario" placeholder="Ex: Seg a Sab, 7h as 20h">
+      </div>
+      <button type="submit" class="btn btn-vs-primary mt-2">Salvar identidade</button>
+    </form>
+  </div>
+
+  <div class="vs-card mb-3">
+    <h2 class="h6 mb-3">Notificacoes</h2>
+    <p class="small vs-muted">Escolha quais alertas voce quer receber.</p>
+    <form id="form-notificacoes">
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notif-vencendo">
+        <label class="form-check-label small" for="notif-vencendo">Produtos vencendo</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notif-vencidos">
+        <label class="form-check-label small" for="notif-vencidos">Produtos vencidos</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notif-estoque">
+        <label class="form-check-label small" for="notif-estoque">Estoque baixo</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notif-perdas">
+        <label class="form-check-label small" for="notif-perdas">Novas perdas registradas</label>
+      </div>
+      <div class="form-check form-switch mb-2">
+        <input class="form-check-input" type="checkbox" id="notif-relatorios">
+        <label class="form-check-label small" for="notif-relatorios">Relatorios</label>
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="notif-avisos">
+        <label class="form-check-label small" for="notif-avisos">Avisos administrativos</label>
+      </div>
+      <button type="submit" class="btn btn-vs-primary">Salvar preferencias</button>
+    </form>
+  </div>
+
+  <div class="vs-card">
+    <h2 class="h6 mb-3">Meu perfil</h2>
+    <form id="form-perfil" class="mb-4">
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">Nome</label>
+        <input type="text" class="form-control" id="perfil-nome">
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">Email</label>
+        <input type="email" class="form-control" id="perfil-email" disabled>
+      </div>
+      <button type="submit" class="btn btn-outline-secondary">Salvar nome</button>
+    </form>
+
+    <hr>
+    <h3 class="h6 mt-3 mb-3">Trocar senha</h3>
+    <form id="form-senha">
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">Senha atual</label>
+        <input type="password" class="form-control" id="senha-atual" required>
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">Nova senha</label>
+        <input type="password" class="form-control" id="senha-nova" minlength="8" required>
+      </div>
+      <button type="submit" class="btn btn-outline-secondary">Trocar senha</button>
     </form>
   </div>
 </div>
