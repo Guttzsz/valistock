@@ -1,6 +1,7 @@
 import pytest
 
-from app.services.plano_service import LIMITES, check_plan_limit
+from app.models.subscription import PlanoNome, StatusAssinatura, Subscription
+from app.services.plano_service import LIMITES, check_plan_limit, get_plano_atual
 from app.utils.exceptions import PlanLimitError
 from tests.conftest import auth_headers, registrar_empresa
 
@@ -27,3 +28,31 @@ def test_plano_gratuito_bloqueia_apos_limite_de_produtos(client, db_session, mon
 
     with pytest.raises(PlanLimitError):
         check_plan_limit(db_session, empresa_id, "products")
+
+
+def test_assinatura_cancelada_volta_para_plano_gratuito(client, db_session):
+    """Regressao: uma assinatura Stripe cancelada nao pode continuar concedendo os limites do plano pago."""
+    from uuid import UUID
+
+    data = registrar_empresa(client, "a")
+    empresa_id = UUID(data["usuario"]["empresa_id"])
+
+    sub = Subscription(empresa_id=empresa_id, plano=PlanoNome.BASICO, status=StatusAssinatura.CANCELED)
+    db_session.add(sub)
+    db_session.commit()
+
+    assert get_plano_atual(db_session, empresa_id) == PlanoNome.GRATUITO
+
+
+def test_assinatura_past_due_mantem_direito_ao_plano(client, db_session):
+    """Past_due (falha de pagamento com nova tentativa automatica do Stripe) nao corta acesso imediatamente."""
+    from uuid import UUID
+
+    data = registrar_empresa(client, "a")
+    empresa_id = UUID(data["usuario"]["empresa_id"])
+
+    sub = Subscription(empresa_id=empresa_id, plano=PlanoNome.PROFISSIONAL, status=StatusAssinatura.PAST_DUE)
+    db_session.add(sub)
+    db_session.commit()
+
+    assert get_plano_atual(db_session, empresa_id) == PlanoNome.PROFISSIONAL

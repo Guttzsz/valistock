@@ -2,7 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.produto import Produto
-from app.models.subscription import PlanoNome, Subscription
+from app.models.subscription import PlanoNome, StatusAssinatura, Subscription
 from app.models.usuario import Usuario
 from app.utils.exceptions import PlanLimitError
 
@@ -13,10 +13,17 @@ LIMITES = {
     PlanoNome.PROFISSIONAL: {"products": None, "users": None, "reports": True},  # None = ilimitado
 }
 
+# Status em que a empresa ainda tem direito aos beneficios do plano pago. PAST_DUE fica incluso de
+# proposito: o Stripe tenta cobrar novamente automaticamente, entao nao cortamos acesso na primeira
+# falha. So volta para GRATUITO quando o Stripe efetivamente encerra a assinatura.
+STATUS_COM_DIREITO_AO_PLANO = {StatusAssinatura.ACTIVE, StatusAssinatura.TRIALING, StatusAssinatura.PAST_DUE}
+
 
 def get_plano_atual(db: Session, empresa_id) -> PlanoNome:
     sub = db.scalar(select(Subscription).where(Subscription.empresa_id == empresa_id))
-    return sub.plano if sub else PlanoNome.GRATUITO
+    if sub is None or sub.status not in STATUS_COM_DIREITO_AO_PLANO:
+        return PlanoNome.GRATUITO
+    return sub.plano
 
 
 def check_plan_limit(db: Session, empresa_id, recurso: str) -> None:
