@@ -1,4 +1,4 @@
-/* ValiStock - topbar + bottom mobile nav, injetados em todas as paginas autenticadas. */
+/* ValiStock - topbar + nav desktop + bottom mobile nav, injetados em todas as paginas autenticadas. */
 
 const NAV_ITEMS = [
   { href: "dashboard.html", icon: "\u{1F4CA}", label: "Inicio", key: "dashboard" },
@@ -8,17 +8,49 @@ const NAV_ITEMS = [
   { href: "mais.html", icon: "☰", label: "Mais", key: "mais" },
 ];
 
-function renderTopbar() {
+/* Itens que na versao mobile ficam dentro de "Mais", mas no desktop aparecem
+   num dropdown na barra superior (senao ficam inacessiveis em telas largas). */
+const MAIS_ITEMS = [
+  { href: "perdas.html", label: "📉 Controle de Perdas", key: "perdas" },
+  { href: "relatorios.html", label: "📊 Relatorios", key: "relatorios" },
+  { href: "categorias.html", label: "🏷 Categorias", key: "categorias" },
+  { href: "fornecedores.html", label: "🚚 Fornecedores", key: "fornecedores" },
+  { href: "localizacoes.html", label: "📍 Locais da loja", key: "localizacoes" },
+  { href: "usuarios.html", label: "👥 Usuarios", key: "usuarios" },
+  { href: "historico.html", label: "🕓 Historico", key: "historico" },
+  { href: "planos.html", label: "💳 Plano e assinatura", key: "planos" },
+  { href: "configuracoes.html", label: "⚙️ Configuracoes", key: "configuracoes" },
+];
+
+function renderTopbar(activeKey) {
   const el = document.getElementById("vs-topbar");
   if (!el) return;
   const usuario = Auth.getUser();
+
+  const linksDesktop = NAV_ITEMS.slice(0, 4).map((item) => `
+    <a href="${item.href}" class="vs-desktop-link ${item.key === activeKey ? "active" : ""}">${item.icon} ${item.label}</a>
+  `).join("");
+
+  const maisAtivo = MAIS_ITEMS.some((i) => i.key === activeKey) || activeKey === "mais";
+
   el.innerHTML = `
-    <div class="vs-brand">
-      <div class="vs-brand-mark">VS</div>
-      <div>
-        <div>ValiStock</div>
-        <div class="vs-slogan">Menos perdas. Mais lucro.</div>
+    <div class="vs-topbar-left">
+      <div class="vs-brand">
+        <div class="vs-brand-mark">VS</div>
+        <div>
+          <div>ValiStock</div>
+          <div class="vs-slogan">Menos perdas. Mais lucro.</div>
+        </div>
       </div>
+      <nav class="vs-desktop-nav d-none d-lg-flex">
+        ${linksDesktop}
+        <div class="dropdown">
+          <a href="#" class="vs-desktop-link ${maisAtivo ? "active" : ""}" data-bs-toggle="dropdown" aria-expanded="false">☰ Mais</a>
+          <ul class="dropdown-menu">
+            ${MAIS_ITEMS.map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`).join("")}
+          </ul>
+        </div>
+      </nav>
     </div>
     <div class="dropdown">
       <button class="btn btn-sm btn-light border rounded-circle" style="width:38px;height:38px;" data-bs-toggle="dropdown" aria-expanded="false">
@@ -59,6 +91,6 @@ function renderBottomNav(activeKey) {
 
 function initNav(activeKey) {
   Auth.requireAuth();
-  renderTopbar();
+  renderTopbar(activeKey);
   renderBottomNav(activeKey);
 }
