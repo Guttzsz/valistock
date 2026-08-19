@@ -4,11 +4,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import CurrentUser, get_current_user, require_admin
+from app.auth.dependencies import CurrentUser, get_current_user, require_permissao
+from app.auth.permissions import Permissao
 from app.auth.security import hash_password
 from app.database import get_db
 from app.models.usuario import Usuario
 from app.schemas.usuario import UsuarioCreate, UsuarioOut, UsuarioUpdate
+from app.services.auditoria_service import registrar_auditoria
 from app.services.plano_service import check_plan_limit
 from app.utils.exceptions import ConflictError, NotFoundError
 
@@ -22,7 +24,11 @@ def listar_usuarios(current_user: CurrentUser = Depends(get_current_user), db: S
 
 
 @router.post("", response_model=UsuarioOut, status_code=201)
-def criar_usuario(payload: UsuarioCreate, current_user: CurrentUser = Depends(require_admin), db: Session = Depends(get_db)):
+def criar_usuario(
+    payload: UsuarioCreate,
+    current_user: CurrentUser = Depends(require_permissao(Permissao.FUNCIONARIOS_GERENCIAR)),
+    db: Session = Depends(get_db),
+):
     check_plan_limit(db, current_user.empresa_id, "users")
 
     existente = db.scalar(select(Usuario).where(Usuario.email == payload.email))
@@ -38,6 +44,11 @@ def criar_usuario(payload: UsuarioCreate, current_user: CurrentUser = Depends(re
         perfil=payload.perfil,
     )
     db.add(usuario)
+    db.flush()
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.criado", "usuario", usuario.id, f"{current_user.nome} cadastrou o usuario {usuario.nome} ({usuario.perfil.value}).",
+    )
     db.commit()
     db.refresh(usuario)
     return usuario
@@ -45,7 +56,10 @@ def criar_usuario(payload: UsuarioCreate, current_user: CurrentUser = Depends(re
 
 @router.put("/{usuario_id}", response_model=UsuarioOut)
 def atualizar_usuario(
-    usuario_id: UUID, payload: UsuarioUpdate, current_user: CurrentUser = Depends(require_admin), db: Session = Depends(get_db)
+    usuario_id: UUID,
+    payload: UsuarioUpdate,
+    current_user: CurrentUser = Depends(require_permissao(Permissao.FUNCIONARIOS_GERENCIAR)),
+    db: Session = Depends(get_db),
 ):
     usuario = db.scalar(select(Usuario).where(Usuario.id == usuario_id, Usuario.empresa_id == current_user.empresa_id))
     if usuario is None:
@@ -54,16 +68,28 @@ def atualizar_usuario(
     for campo, valor in payload.model_dump(exclude_unset=True).items():
         setattr(usuario, campo, valor)
 
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.atualizado", "usuario", usuario.id, f"{current_user.nome} atualizou o usuario {usuario.nome}.",
+    )
     db.commit()
     db.refresh(usuario)
     return usuario
 
 
 @router.delete("/{usuario_id}", status_code=204)
-def remover_usuario(usuario_id: UUID, current_user: CurrentUser = Depends(require_admin), db: Session = Depends(get_db)):
+def remover_usuario(
+    usuario_id: UUID,
+    current_user: CurrentUser = Depends(require_permissao(Permissao.FUNCIONARIOS_GERENCIAR)),
+    db: Session = Depends(get_db),
+):
     usuario = db.scalar(select(Usuario).where(Usuario.id == usuario_id, Usuario.empresa_id == current_user.empresa_id))
     if usuario is None:
         raise NotFoundError("Usuario nao encontrado.")
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.removido", "usuario", usuario.id, f"{current_user.nome} removeu o usuario {usuario.nome}.",
+    )
     db.delete(usuario)
     db.commit()
     return None

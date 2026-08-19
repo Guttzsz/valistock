@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.auth.jwt import decode_access_token
+from app.auth.permissions import Permissao, tem_permissao
 from app.database import get_db
 from app.models.usuario import PerfilUsuario, Usuario
 from app.utils.exceptions import PermissionDeniedError, UnauthorizedError
@@ -57,3 +58,14 @@ def require_perfil(*perfis: PerfilUsuario):
 
 require_admin = require_perfil(PerfilUsuario.ADMINISTRADOR)
 require_gerente_ou_admin = require_perfil(PerfilUsuario.ADMINISTRADOR, PerfilUsuario.GERENTE)
+
+
+def require_permissao(permissao: Permissao):
+    """Dependency factory enforcing granular, backend-side authorization. Never trust the frontend for this."""
+
+    def _check(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+        if not tem_permissao(current_user.perfil, permissao):
+            raise PermissionDeniedError()
+        return current_user
+
+    return _check

@@ -1,11 +1,16 @@
+import csv
+import io
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import CurrentUser, get_current_user
+from app.auth.dependencies import CurrentUser, require_permissao
+from app.auth.permissions import Permissao
 from app.database import get_db
+from app.models.categoria import Categoria
 from app.models.lote import Lote, StatusLote
 from app.models.perda import Perda
 from app.models.produto import Produto
@@ -29,7 +34,7 @@ def relatorio_perdas(
     periodo: str = Query(default="30dias"),
     data_inicio: str | None = None,
     data_fim: str | None = None,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_permissao(Permissao.RELATORIOS_VISUALIZAR)),
     db: Session = Depends(get_db),
 ):
     inicio, fim = _intervalo(periodo, data_inicio, data_fim)
@@ -57,10 +62,11 @@ def relatorio_perdas(
     ).all()
 
     categorias_ranking = db.execute(
-        select(Produto.categoria, func.sum(Perda.valor_total).label("total"))
+        select(func.coalesce(Categoria.nome, "Sem categoria"), func.sum(Perda.valor_total).label("total"))
         .join(Produto, Produto.id == Perda.produto_id)
+        .outerjoin(Categoria, Categoria.id == Produto.categoria_id)
         .where(Perda.empresa_id == current_user.empresa_id, Perda.data_perda.between(inicio, fim))
-        .group_by(Produto.categoria)
+        .group_by(Categoria.nome)
         .order_by(func.sum(Perda.valor_total).desc())
     ).all()
 
@@ -69,12 +75,47 @@ def relatorio_perdas(
         "total_perdas": float(total),
         "perdas_por_dia": [{"data": data.isoformat(), "valor": float(valor)} for data, valor in por_dia],
         "produtos_mais_perdas": [{"produto": nome, "valor": float(total), "quantidade": qtd} for nome, total, qtd in produtos_ranking],
-        "categorias_mais_perdas": [{"categoria": cat or "Sem categoria", "valor": float(total)} for cat, total in categorias_ranking],
+        "categorias_mais_perdas": [{"categoria": cat, "valor": float(total)} for cat, total in categorias_ranking],
     }
 
 
+@router.get("/perdas/exportar")
+def exportar_perdas_csv(
+    periodo: str = Query(default="30dias"),
+    data_inicio: str | None = None,
+    data_fim: str | None = None,
+    current_user: CurrentUser = Depends(require_permissao(Permissao.RELATORIOS_EXPORTAR)),
+    db: Session = Depends(get_db),
+):
+    inicio, fim = _intervalo(periodo, data_inicio, data_fim)
+
+    linhas = db.execute(
+        select(Perda, Produto.nome)
+        .join(Produto, Produto.id == Perda.produto_id)
+        .where(Perda.empresa_id == current_user.empresa_id, Perda.data_perda.between(inicio, fim))
+        .order_by(Perda.data_perda.desc())
+    ).all()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer, delimiter=";")
+    writer.writerow(["Data", "Produto", "Quantidade", "Motivo", "Valor unitario", "Valor total", "Observacao"])
+    for perda, produto_nome in linhas:
+        writer.writerow(
+            [perda.data_perda.isoformat(), produto_nome, perda.quantidade, perda.motivo.value,
+             str(perda.valor_unitario), str(perda.valor_total), perda.observacao or ""]
+        )
+    buffer.seek(0)
+
+    nome_arquivo = f"perdas_{inicio.isoformat()}_a_{fim.isoformat()}.csv"
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{nome_arquivo}"'},
+    )
+
+
 @router.get("/risco")
-def relatorio_risco(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+def relatorio_risco(current_user: CurrentUser = Depends(require_permissao(Permissao.RELATORIOS_VISUALIZAR)), db: Session = Depends(get_db)):
     lotes = db.execute(
         select(Lote, Produto.nome)
         .join(Produto, Produto.id == Lote.produto_id)

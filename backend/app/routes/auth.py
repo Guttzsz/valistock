@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 
 from app.auth.dependencies import CurrentUser, get_current_user
 from app.auth.jwt import create_access_token
+from app.auth.permissions import permissoes_do_perfil
 from app.auth.security import hash_password, verify_password
 from app.database import get_db
 from app.models.configuracao import Configuracao
 from app.models.empresa import Empresa
 from app.models.usuario import PerfilUsuario, Usuario
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UsuarioMe
-from app.utils.exceptions import ConflictError, UnauthorizedError
+from app.schemas.auth import AtualizarPerfilRequest, LoginRequest, RegisterRequest, TokenResponse, TrocarSenhaRequest, UsuarioMe
+from app.utils.exceptions import ConflictError, UnauthorizedError, ValidationErrorApp
 from app.utils.timezone import now
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -67,3 +68,29 @@ def logout(current_user: CurrentUser = Depends(get_current_user)):
 def me(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
     usuario = db.get(Usuario, current_user.id)
     return UsuarioMe.model_validate(usuario)
+
+
+@router.put("/perfil", response_model=UsuarioMe)
+def atualizar_meu_perfil(payload: AtualizarPerfilRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    usuario.nome = payload.nome
+    db.commit()
+    db.refresh(usuario)
+    return UsuarioMe.model_validate(usuario)
+
+
+@router.put("/senha", status_code=204)
+def trocar_minha_senha(payload: TrocarSenhaRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    if not verify_password(payload.senha_atual, usuario.senha_hash):
+        raise ValidationErrorApp("Senha atual incorreta.")
+    usuario.senha_hash = hash_password(payload.senha_nova)
+    db.commit()
+    return None
+
+
+@router.get("/permissoes")
+def minhas_permissoes(current_user: CurrentUser = Depends(get_current_user)):
+    """Lista as permissoes do usuario logado, para o frontend decidir o que mostrar/esconder.
+    Isto e apenas cosmetico: a autorizacao real sempre acontece no backend, em cada rota."""
+    return {"perfil": current_user.perfil.value, "permissoes": permissoes_do_perfil(current_user.perfil)}

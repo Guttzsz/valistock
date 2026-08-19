@@ -5,13 +5,17 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import CurrentUser, get_current_user
+from app.auth.dependencies import CurrentUser, get_current_user, require_permissao
+from app.auth.permissions import Permissao
 from app.database import get_db
 from app.models.lote import Lote, StatusLote
+from app.models.movimentacao_estoque import TipoMovimentacao
 from app.models.perda import Perda
 from app.models.produto import Produto
 from app.models.usuario import Usuario
 from app.schemas.perda import PerdaComProduto, PerdaCreate, PerdaOut
+from app.services.auditoria_service import registrar_auditoria
+from app.services.estoque_service import ajustar_estoque
 from app.services.financeiro_service import valor_total_perda
 from app.utils.exceptions import NotFoundError, ValidationErrorApp
 
@@ -24,7 +28,7 @@ def listar_perdas(
     data_fim: date | None = None,
     produto_id: UUID | None = None,
     motivo: str | None = None,
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(require_permissao(Permissao.PERDAS_VISUALIZAR)),
     db: Session = Depends(get_db),
 ):
     stmt = (
@@ -51,7 +55,11 @@ def listar_perdas(
 
 
 @router.post("", response_model=PerdaComProduto, status_code=201)
-def registrar_perda(payload: PerdaCreate, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+def registrar_perda(
+    payload: PerdaCreate,
+    current_user: CurrentUser = Depends(require_permissao(Permissao.PERDAS_REGISTRAR)),
+    db: Session = Depends(get_db),
+):
     produto = db.scalar(select(Produto).where(Produto.id == payload.produto_id, Produto.empresa_id == current_user.empresa_id))
     if produto is None:
         raise NotFoundError("Produto nao encontrado.")
@@ -79,12 +87,22 @@ def registrar_perda(payload: PerdaCreate, current_user: CurrentUser = Depends(ge
         usuario_id=current_user.id,
     )
     db.add(perda)
+    db.flush()  # garante perda.id para a movimentacao de estoque
 
-    produto.estoque_atual = max(0, produto.estoque_atual - payload.quantidade)
+    ajustar_estoque(
+        db, produto, -payload.quantidade, TipoMovimentacao.PERDA, current_user.id,
+        lote_id=payload.lote_id, motivo=f"Perda: {payload.motivo.value}",
+    )
     if lote:
         lote.quantidade -= payload.quantidade
         if lote.quantidade == 0:
             lote.status = StatusLote.PERDIDO
+
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "perda.registrada", "perda", perda.id,
+        f"{current_user.nome} registrou perda de {payload.quantidade} un. de {produto.nome} ({payload.motivo.value}).",
+    )
 
     db.commit()
     db.refresh(perda)

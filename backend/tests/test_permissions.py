@@ -55,5 +55,5 @@ def test_funcionario_nao_pode_alterar_configuracoes(client):
     login = client.post("/api/auth/login", json={"email": "func@example.com", "senha": "SenhaForte123!"}).json()
     headers_func = auth_headers(login["access_token"])
 
-    resp = client.put("/api/configuracoes", json={"dias_alerta_1": 10, "dias_alerta_2": 5, "dias_alerta_3": 2}, headers=headers_func)
+    resp = client.put("/api/configuracoes/alertas", json={"dias_alerta_1": 10, "dias_alerta_2": 5, "dias_alerta_3": 2}, headers=headers_func)
     assert resp.status_code == 403

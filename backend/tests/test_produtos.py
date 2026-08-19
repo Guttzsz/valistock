@@ -5,7 +5,6 @@ def _criar_produto(client, headers, **overrides):
     payload = {
         "codigo_barras": "7891000100103",
         "nome": "Leite Integral 1L",
-        "categoria": "Laticinios",
         "unidade_medida": "UN",
         "preco_custo": "4.20",
         "preco_venda": "6.50",

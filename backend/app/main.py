@@ -6,7 +6,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routes import alertas, auth, configuracoes, dashboard, empresas, lotes, perdas, produtos, relatorios, subscriptions, usuarios, validades
+from app.routes import (
+    alertas,
+    auth,
+    campos_personalizados,
+    categorias,
+    configuracoes,
+    dashboard,
+    empresas,
+    fornecedores,
+    historico,
+    localizacoes,
+    lotes,
+    perdas,
+    preferencias,
+    produtos,
+    relatorios,
+    subscriptions,
+    usuarios,
+    validades,
+)
 from app.services.scheduler import start_scheduler, stop_scheduler
 
 logging.basicConfig(level=logging.INFO)
@@ -56,6 +75,12 @@ app.include_router(dashboard.router)
 app.include_router(relatorios.router)
 app.include_router(configuracoes.router)
 app.include_router(subscriptions.router)
+app.include_router(categorias.router)
+app.include_router(fornecedores.router)
+app.include_router(localizacoes.router)
+app.include_router(campos_personalizados.router)
+app.include_router(historico.router)
+app.include_router(preferencias.router)
 
 
 @app.get("/", tags=["health"])
