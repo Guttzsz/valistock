@@ -26,6 +26,18 @@ function formatOrDados(value, formatter) {
   return value === null || value === undefined ? "Dados insuficientes" : formatter(value);
 }
 
+/* Mesma paleta categorica validada (dataviz skill) usada em relatorios.js. */
+const CATEGORICAL_PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
+const SUCCESS_HUE = "#16a34a"; // receita: serie unica, semantica positiva (marca do ValiStock)
+const INK_MUTED = "#898781";
+const INK_SECONDARY = "#52514e";
+const GRIDLINE = "#e1e0d9";
+
+Chart.defaults.font.family = "'Inter', 'Segoe UI', -apple-system, sans-serif";
+Chart.defaults.color = INK_SECONDARY;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.color = INK_SECONDARY;
+
 async function carregarFinanceiro() {
   try {
     const [dashboard, receitaMensal, receitaPorPlano, assinaturas, pagamentos] = await Promise.all([
@@ -51,9 +63,29 @@ async function carregarFinanceiro() {
       type: "line",
       data: {
         labels: receitaMensal.map((r) => r.mes),
-        datasets: [{ label: "Receita (R$)", data: receitaMensal.map((r) => r.receita), borderColor: "#16a34a", backgroundColor: "rgba(22,163,74,0.12)", fill: true, tension: 0.3 }],
+        datasets: [{
+          label: "Receita (R$)",
+          data: receitaMensal.map((r) => r.receita),
+          borderColor: SUCCESS_HUE,
+          backgroundColor: "rgba(22,163,74,0.10)",
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 5,
+          pointBackgroundColor: SUCCESS_HUE,
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.3,
+        }],
       },
-      options: { plugins: { legend: { display: false } }, responsive: true },
+      options: {
+        plugins: { legend: { display: false } }, // serie unica: titulo do card ja diz o que e
+        responsive: true,
+        scales: {
+          x: { grid: { display: false }, ticks: { color: INK_MUTED } },
+          y: { grid: { color: GRIDLINE }, border: { display: false }, ticks: { color: INK_MUTED } },
+        },
+      },
     });
 
     const comClientes = receitaPorPlano.filter((p) => p.quantidade > 0);
@@ -61,9 +93,9 @@ async function carregarFinanceiro() {
       type: "doughnut",
       data: {
         labels: comClientes.map((p) => `${p.plano} (${p.quantidade})`),
-        datasets: [{ data: comClientes.map((p) => p.quantidade), backgroundColor: ["#94a3b8", "#16a34a", "#0ea5e9"] }],
+        datasets: [{ data: comClientes.map((p) => p.quantidade), backgroundColor: CATEGORICAL_PALETTE, borderColor: "#fff", borderWidth: 2 }],
       },
-      options: { responsive: true },
+      options: { responsive: true, plugins: { legend: { position: "bottom" } } },
     });
 
     document.querySelector("#tabela-assinaturas tbody").innerHTML = assinaturas.length
