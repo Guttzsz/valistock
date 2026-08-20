@@ -8,7 +8,7 @@ function tempoRelativo(isoDatetime) {
 function render(logs) {
   const el = document.getElementById("vs-lista");
   if (!logs.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">🕓</div>Nenhuma acao registrada ainda.</div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("history", { size: 24 })}</div>Nenhuma acao registrada ainda.</div>`;
     return;
   }
   el.innerHTML = logs.map((log) => `

@@ -1,29 +1,31 @@
 /* ValiStock - topbar + nav desktop + bottom mobile nav, injetados em todas as paginas autenticadas. */
 
 const NAV_ITEMS = [
-  { href: "dashboard.html", icon: "\u{1F4CA}", label: "Inicio", key: "dashboard" },
-  { href: "produtos.html", icon: "\u{1F4E6}", label: "Produtos", key: "produtos" },
-  { href: "validades.html", icon: "⏳", label: "Validades", key: "validades" },
-  { href: "alertas.html", icon: "\u{1F514}", label: "Alertas", key: "alertas" },
-  { href: "mais.html", icon: "☰", label: "Mais", key: "mais" },
+  { href: "dashboard.html", icon: "home", label: "Inicio", key: "dashboard" },
+  { href: "produtos.html", icon: "box", label: "Produtos", key: "produtos" },
+  { href: "validades.html", icon: "clock", label: "Validades", key: "validades" },
+  { href: "alertas.html", icon: "bell", label: "Alertas", key: "alertas" },
+  { href: "mais.html", icon: "menu", label: "Mais", key: "mais" },
 ];
 
 /* Itens que na versao mobile ficam dentro de "Mais", mas no desktop aparecem
    num dropdown na barra superior (senao ficam inacessiveis em telas largas). */
 const MAIS_ITEMS = [
-  { href: "perdas.html", label: "📉 Controle de Perdas", key: "perdas" },
-  { href: "relatorios.html", label: "📊 Relatorios", key: "relatorios" },
-  { href: "categorias.html", label: "🏷 Categorias", key: "categorias" },
-  { href: "fornecedores.html", label: "🚚 Fornecedores", key: "fornecedores" },
-  { href: "localizacoes.html", label: "📍 Locais da loja", key: "localizacoes" },
-  { href: "usuarios.html", label: "👥 Usuarios", key: "usuarios" },
-  { href: "historico.html", label: "🕓 Historico", key: "historico" },
-  { href: "planos.html", label: "💳 Plano e assinatura", key: "planos" },
-  { href: "configuracoes.html", label: "⚙️ Configuracoes", key: "configuracoes" },
+  { href: "perdas.html", icon: "trendingDown", label: "Controle de Perdas", key: "perdas" },
+  { href: "relatorios.html", icon: "barChart", label: "Relatorios", key: "relatorios" },
+  { href: "categorias.html", icon: "tag", label: "Categorias", key: "categorias" },
+  { href: "fornecedores.html", icon: "truck", label: "Fornecedores", key: "fornecedores" },
+  { href: "localizacoes.html", icon: "mapPin", label: "Locais da loja", key: "localizacoes" },
+  { href: "usuarios.html", icon: "users", label: "Usuarios", key: "usuarios" },
+  { href: "historico.html", icon: "history", label: "Historico", key: "historico" },
+  { href: "planos.html", icon: "creditCard", label: "Plano e assinatura", key: "planos" },
+  { href: "configuracoes.html", icon: "settings", label: "Configuracoes", key: "configuracoes" },
 ];
 
 function itensMais(usuario) {
-  return usuario?.super_admin ? [...MAIS_ITEMS, { href: "financeiro.html", label: "💼 Financeiro (plataforma)", key: "financeiro" }] : MAIS_ITEMS;
+  return usuario?.super_admin
+    ? [...MAIS_ITEMS, { href: "financeiro.html", icon: "briefcase", label: "Financeiro (plataforma)", key: "financeiro" }]
+    : MAIS_ITEMS;
 }
 
 function renderTopbar(activeKey) {
@@ -33,7 +35,7 @@ function renderTopbar(activeKey) {
   const itens = itensMais(usuario);
 
   const linksDesktop = NAV_ITEMS.slice(0, 4).map((item) => `
-    <a href="${item.href}" class="vs-desktop-link ${item.key === activeKey ? "active" : ""}">${item.icon} ${item.label}</a>
+    <a href="${item.href}" class="vs-desktop-link ${item.key === activeKey ? "active" : ""}">${VsIcon(item.icon, { size: 16 })} ${item.label}</a>
   `).join("");
 
   const maisAtivo = itens.some((i) => i.key === activeKey) || activeKey === "mais";
@@ -50,22 +52,22 @@ function renderTopbar(activeKey) {
       <nav class="vs-desktop-nav d-none d-lg-flex">
         ${linksDesktop}
         <div class="dropdown">
-          <a href="#" class="vs-desktop-link ${maisAtivo ? "active" : ""}" data-bs-toggle="dropdown" aria-expanded="false">☰ Mais</a>
+          <a href="#" class="vs-desktop-link ${maisAtivo ? "active" : ""}" data-bs-toggle="dropdown" aria-expanded="false">${VsIcon("menu", { size: 16 })} Mais</a>
           <ul class="dropdown-menu">
-            ${itens.map((item) => `<li><a class="dropdown-item" href="${item.href}">${item.label}</a></li>`).join("")}
+            ${itens.map((item) => `<li><a class="dropdown-item d-flex align-items-center gap-2" href="${item.href}">${VsIcon(item.icon, { size: 16, class: "vs-muted" })} ${item.label}</a></li>`).join("")}
           </ul>
         </div>
       </nav>
     </div>
     <div class="dropdown">
-      <button class="btn btn-sm btn-light border rounded-circle" style="width:38px;height:38px;" data-bs-toggle="dropdown" aria-expanded="false">
+      <button class="vs-avatar-btn" data-bs-toggle="dropdown" aria-expanded="false">
         ${(usuario?.nome || "?").charAt(0).toUpperCase()}
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><span class="dropdown-item-text small text-muted">${usuario?.nome || ""}<br>${usuario?.email || ""}</span></li>
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="configuracoes.html">Configuracoes</a></li>
-        <li><a class="dropdown-item text-danger" href="#" id="vs-logout-link">Sair</a></li>
+        <li><a class="dropdown-item d-flex align-items-center gap-2" href="configuracoes.html">${VsIcon("settings", { size: 16, class: "vs-muted" })} Configuracoes</a></li>
+        <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#" id="vs-logout-link">${VsIcon("logOut", { size: 16 })} Sair</a></li>
       </ul>
     </div>
   `;
@@ -81,7 +83,7 @@ function renderBottomNav(activeKey) {
   el.className = "vs-bottom-nav";
   el.innerHTML = NAV_ITEMS.map((item) => `
     <a href="${item.href}" class="vs-nav-item ${item.key === activeKey ? "active" : ""}">
-      <span class="vs-nav-icon ${item.key === "alertas" ? "vs-nav-badge" : ""}" ${item.key === "alertas" ? 'id="vs-nav-alert-count" data-count="0"' : ""}>${item.icon}</span>
+      <span class="vs-nav-icon ${item.key === "alertas" ? "vs-nav-badge" : ""}" ${item.key === "alertas" ? 'id="vs-nav-alert-count" data-count="0"' : ""}>${VsIcon(item.icon, { size: 22 })}</span>
       <span>${item.label}</span>
     </a>
   `).join("");
@@ -98,4 +100,5 @@ function initNav(activeKey) {
   Auth.requireAuth();
   renderTopbar(activeKey);
   renderBottomNav(activeKey);
+  if (typeof VsApplyIcons === "function") VsApplyIcons();
 }

@@ -45,7 +45,7 @@ async function loadDashboard() {
           <div class="vs-list-card-meta">Lote ${v.numero_lote} · ${v.quantidade} un. · vence em ${formatDate(v.data_validade)} · ${formatCurrency(v.valor_em_risco)} em risco</div>
         </div>
       `).join("")
-      : `<div class="vs-empty"><div class="vs-empty-icon">🎉</div>Nenhum produto urgente no momento.</div>`;
+      : `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("checkCircle", { size: 24 })}</div>Nenhum produto urgente no momento.</div>`;
 
     const alertasList = document.getElementById("vs-alertas-list");
     alertasList.innerHTML = alertas.length
@@ -55,7 +55,7 @@ async function loadDashboard() {
           <div class="vs-list-card-meta">${formatDate(a.data_alerta)}</div>
         </div>
       `).join("")
-      : `<div class="vs-empty"><div class="vs-empty-icon">🔔</div>Voce esta em dia com os alertas.</div>`;
+      : `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("bell", { size: 24 })}</div>Voce esta em dia com os alertas.</div>`;
 
     document.getElementById("vs-loading").classList.add("d-none");
     document.getElementById("vs-dashboard-content").classList.remove("d-none");

@@ -14,7 +14,7 @@ let filtroAtual = "nao-lidos";
 function renderAlertas(alertas) {
   const el = document.getElementById("vs-alertas-list");
   if (!alertas.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">🔔</div>Nenhum alerta por aqui.</div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("bell", { size: 24 })}</div>Nenhum alerta por aqui.</div>`;
     return;
   }
   el.innerHTML = alertas.map((a) => {

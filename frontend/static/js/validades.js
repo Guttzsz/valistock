@@ -23,9 +23,9 @@ function diasLabel(dias) {
 function acoesHtml(v) {
   return `
     <div class="btn-group btn-group-sm">
-      <button class="btn btn-outline-success" title="Marcar como vendido" onclick="marcarVendido('${v.lote_id}')">✔</button>
-      <button class="btn btn-outline-danger" title="Registrar perda" onclick="irParaRegistrarPerda('${v.produto_id}','${v.lote_id}')">📉</button>
-      <button class="btn btn-outline-secondary" title="Criar promocao" onclick="avisoPromocaoIndisponivel()">🏷</button>
+      <button class="btn btn-outline-success" title="Marcar como vendido" onclick="marcarVendido('${v.lote_id}')">${VsIcon("check", { size: 15 })}</button>
+      <button class="btn btn-outline-danger" title="Registrar perda" onclick="irParaRegistrarPerda('${v.produto_id}','${v.lote_id}')">${VsIcon("trendingDown", { size: 15 })}</button>
+      <button class="btn btn-outline-secondary" title="Criar promocao" onclick="avisoPromocaoIndisponivel()">${VsIcon("tag", { size: 15 })}</button>
     </div>
   `;
 }
@@ -33,7 +33,7 @@ function acoesHtml(v) {
 function renderCards(validades) {
   const el = document.getElementById("vs-validades-cards");
   if (!validades.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">✅</div>Nenhum lote encontrado para este filtro.</div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("checkCircle", { size: 24 })}</div>Nenhum lote encontrado para este filtro.</div>`;
     return;
   }
   el.innerHTML = validades.map((v) => `

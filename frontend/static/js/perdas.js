@@ -25,7 +25,7 @@ function periodoParaDatas(valor) {
 function renderPerdas(perdas) {
   const el = document.getElementById("vs-perdas-list");
   if (!perdas.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">📉</div>Nenhuma perda registrada neste periodo.</div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("trendingDown", { size: 24 })}</div>Nenhuma perda registrada neste periodo.</div>`;
     document.getElementById("total-periodo").textContent = formatCurrency(0);
     return;
   }

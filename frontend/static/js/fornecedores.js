@@ -5,7 +5,7 @@ let cache = [];
 function render(itens) {
   const el = document.getElementById("vs-lista");
   if (!itens.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">🚚</div>Nenhum fornecedor cadastrado.</div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("truck", { size: 24 })}</div>Nenhum fornecedor cadastrado.</div>`;
     return;
   }
   el.innerHTML = itens.map((f) => `

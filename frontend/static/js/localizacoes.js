@@ -5,7 +5,7 @@ let cache = [];
 function render(itens) {
   const el = document.getElementById("vs-lista");
   if (!itens.length) {
-    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">📍</div>Nenhum local cadastrado.<br><span class="small">Ex: Corredor 1, Geladeira 2, Freezer, Estoque.</span></div>`;
+    el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("mapPin", { size: 24 })}</div>Nenhum local cadastrado.<br><span class="small">Ex: Corredor 1, Geladeira 2, Freezer, Estoque.</span></div>`;
     return;
   }
   el.innerHTML = itens.map((l) => `

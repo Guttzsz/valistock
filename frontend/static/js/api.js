@@ -257,10 +257,11 @@ function toast(message, variant = "success") {
     return el;
   })();
 
-  const colors = { success: "#16a34a", danger: "#dc2626", info: "#0f172a" };
+  const icons = { success: "checkCircle", danger: "xCircle", info: "alertTriangle" };
+  const iconHtml = typeof VsIcon === "function" ? VsIcon(icons[variant] || icons.info, { size: 16 }) : "";
   const toastEl = document.createElement("div");
-  toastEl.textContent = message;
-  toastEl.style.cssText = `background:${colors[variant] || colors.info};color:#fff;padding:0.75rem 1rem;border-radius:10px;margin-bottom:0.5rem;font-size:0.88rem;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,0.2);`;
+  toastEl.className = `vs-toast ${variant}`;
+  toastEl.innerHTML = `${iconHtml}<span>${message}</span>`;
   container.appendChild(toastEl);
   setTimeout(() => toastEl.remove(), 3500);
 }

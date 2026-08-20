@@ -8,7 +8,7 @@ let localizacoesCache = [];
 function renderProdutos(produtos) {
   const container = document.getElementById("vs-produtos-list");
   if (!produtos.length) {
-    container.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">📦</div>Nenhum produto encontrado.<br><span class="small">Cadastre seu primeiro produto para comecar.</span></div>`;
+    container.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("box", { size: 24 })}</div>Nenhum produto encontrado.<br><span class="small">Cadastre seu primeiro produto para comecar.</span></div>`;
     return;
   }
 
