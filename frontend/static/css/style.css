@@ -9,13 +9,30 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
+/* ---------- Cor de destaque: cada [data-accent] so redefine esta 1 variavel; os 5
+   tokens de marca derivados dela sao calculados abaixo (uma vez, para os 2 temas),
+   entao nao existe um bloco por combinacao tema x cor (item 20 do pedido). ---------- */
+:root { --vs-accent-hue: #15803d; }
+[data-accent="azul"]     { --vs-accent-hue: #2563eb; }
+[data-accent="verde"]    { --vs-accent-hue: #15803d; }
+[data-accent="roxo"]     { --vs-accent-hue: #7c3aed; }
+[data-accent="laranja"]  { --vs-accent-hue: #ea580c; }
+[data-accent="vermelho"] { --vs-accent-hue: #dc2626; }
+[data-accent="ciano"]    { --vs-accent-hue: #0891b2; }
+[data-accent="rosa"]     { --vs-accent-hue: #db2777; }
+[data-accent="amarelo"]  { --vs-accent-hue: #ca8a04; }
+
 :root {
-  /* Marca */
-  --vs-primary: #15803d;
-  --vs-primary-dark: #14532d;
-  --vs-primary-light: #dcfce7;
-  --vs-primary-50: #f0fdf4;
-  --vs-primary-600: #16a34a;
+  /* Marca (derivada de --vs-accent-hue) */
+  --vs-primary: var(--vs-accent-hue);
+  --vs-primary-600: var(--vs-accent-hue);
+  /* -700 = sempre escuro/saturado nos 2 temas (fundo solido com texto branco por cima:
+     gradiente da marca, hover de botao, toast). -dark = "texto sobre fundo claro"
+     (badges, links ativos), por isso ele SIM inverte no tema noite, logo abaixo. */
+  --vs-primary-700: color-mix(in srgb, var(--vs-accent-hue) 80%, black);
+  --vs-primary-dark: color-mix(in srgb, var(--vs-accent-hue) 80%, black);
+  --vs-primary-light: color-mix(in srgb, var(--vs-accent-hue) 14%, white);
+  --vs-primary-50: color-mix(in srgb, var(--vs-accent-hue) 6%, white);
 
   /* Neutros */
   --vs-dark: #0f172a;
@@ -26,8 +43,11 @@
   --vs-card: #ffffff;
   --vs-border: #e6eaf0;
   --vs-border-strong: #d7dce4;
+  --vs-surface-translucent: rgba(255, 255, 255, 0.92);
+  --vs-skeleton-a: #f8fafc;
+  --vs-skeleton-b: #eef1f5;
 
-  /* Status */
+  /* Status — sempre distintos da cor de destaque escolhida (item 21) */
   --vs-normal: #15803d;
   --vs-atencao: #b45309;
   --vs-atencao-bg: #fef3c7;
@@ -39,6 +59,8 @@
   --vs-vencido-bg: #450a0a;
   --vs-info: #1d4ed8;
   --vs-info-bg: #dbeafe;
+  --vs-estoque-baixo: #4338ca;
+  --vs-estoque-baixo-bg: #e0e7ff;
 
   /* Forma */
   --vs-radius-sm: 8px;
@@ -48,6 +70,51 @@
   --vs-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.05);
   --vs-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.06);
   --vs-font: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+}
+
+/* ---------- Modo noite — redefine so o grupo neutro + status; a marca (acima) ja se
+   adapta sozinha porque suas formulas usam color-mix() com "white"/"black" como alvo. ---------- */
+[data-theme="dark"] {
+  --vs-primary-dark: color-mix(in srgb, var(--vs-accent-hue) 55%, white);
+  --vs-primary-light: color-mix(in srgb, var(--vs-accent-hue) 22%, black);
+  --vs-primary-50: color-mix(in srgb, var(--vs-accent-hue) 10%, black);
+
+  --vs-dark: #eef0f3;
+  --vs-slate: #a6adba;
+  --vs-slate-light: #767e8c;
+  --vs-slate-50: #23262e;
+  --vs-bg: #14161b;
+  --vs-card: #1b1e25;
+  --vs-border: #2b2f38;
+  --vs-border-strong: #3a3f4a;
+  --vs-surface-translucent: rgba(20, 22, 27, 0.88);
+  --vs-skeleton-a: #23262e;
+  --vs-skeleton-b: #2b2f38;
+
+  --vs-normal: #4ade80;
+  --vs-atencao: #fbbf24;
+  --vs-atencao-bg: #3a2f13;
+  --vs-urgente: #fb923c;
+  --vs-urgente-bg: #3a2313;
+  --vs-vence-hoje: #f87171;
+  --vs-vence-hoje-bg: #3a1414;
+  --vs-vencido: #fecaca;
+  --vs-vencido-bg: #2b0a0a;
+  --vs-info: #60a5fa;
+  --vs-info-bg: #14213a;
+  --vs-estoque-baixo: #a5b4fc;
+  --vs-estoque-baixo-bg: #23244a;
+
+  --vs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --vs-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --vs-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+/* Transicao suave entre temas (item 23) — barata, um unico seletor amplo */
+body, .vs-card, .vs-kpi, .vs-topbar, .vs-bottom-nav, .vs-list-card, .vs-table-wrap,
+table.vs-table td, table.vs-table th, .vs-menu-list, .vs-menu-row, .modal-content,
+.dropdown-menu, .form-control, .form-select, .vs-auth-card {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 * {
@@ -86,7 +153,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---------- Top bar ---------- */
 .vs-topbar {
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--vs-surface-translucent);
   backdrop-filter: saturate(180%) blur(10px);
   border-bottom: 1px solid var(--vs-border);
   position: sticky;
@@ -111,14 +178,14 @@ h1, h2, h3, h4, h5, h6 {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--vs-primary-600), var(--vs-primary-dark));
+  background: linear-gradient(135deg, var(--vs-primary-600), var(--vs-primary-700));
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 800;
   font-size: 0.9rem;
-  box-shadow: 0 2px 6px rgba(21, 128, 61, 0.35);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--vs-accent-hue) 35%, transparent);
   flex-shrink: 0;
 }
 
@@ -298,7 +365,7 @@ h1, h2, h3, h4, h5, h6 {
 .vs-badge.urgente { background: var(--vs-urgente-bg); color: var(--vs-urgente); }
 .vs-badge.vence_hoje { background: var(--vs-vence-hoje-bg); color: var(--vs-vence-hoje); }
 .vs-badge.vencido { background: var(--vs-vencido-bg); color: var(--vs-vencido); }
-.vs-badge.estoque_baixo { background: #e0e7ff; color: #4338ca; }
+.vs-badge.estoque_baixo { background: var(--vs-estoque-baixo-bg); color: var(--vs-estoque-baixo); }
 .vs-badge.neutro { background: var(--vs-slate-50); color: var(--vs-slate); border: 1px solid var(--vs-border); }
 .vs-badge.info { background: var(--vs-info-bg); color: var(--vs-info); }
 
@@ -332,12 +399,12 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--vs-primary-600);
   border-color: var(--vs-primary-600);
   color: white;
-  box-shadow: 0 1px 2px rgba(21, 128, 61, 0.15);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--vs-accent-hue) 15%, transparent);
 }
 .btn-vs-primary:hover,
 .btn-success:hover {
-  background: var(--vs-primary-dark);
-  border-color: var(--vs-primary-dark);
+  background: var(--vs-primary-700);
+  border-color: var(--vs-primary-700);
   color: white;
 }
 
@@ -414,7 +481,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  box-shadow: 0 8px 20px rgba(21, 128, 61, 0.4);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--vs-accent-hue) 40%, transparent);
   border: none;
   z-index: 45;
   transition: transform 0.15s ease;
@@ -578,7 +645,7 @@ table.vs-table tr:last-child td { border-bottom: none; }
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--vs-surface-translucent);
   backdrop-filter: saturate(180%) blur(10px);
   border-top: 1px solid var(--vs-border);
   display: flex;
@@ -647,13 +714,13 @@ table.vs-table tr:last-child td { border-bottom: none; }
   justify-content: center;
   padding: 1.5rem;
   background:
-    radial-gradient(circle at 15% 15%, rgba(34, 197, 94, 0.25), transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(21, 128, 61, 0.3), transparent 45%),
-    linear-gradient(160deg, #0b1220 0%, #0f2e1a 100%);
+    radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--vs-accent-hue) 35%, transparent), transparent 45%),
+    radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--vs-accent-hue) 45%, transparent), transparent 45%),
+    linear-gradient(160deg, #0b1220 0%, color-mix(in srgb, var(--vs-accent-hue) 35%, #0b1220) 100%);
 }
 
 .vs-auth-card {
-  background: white;
+  background: var(--vs-card);
   border-radius: 20px;
   padding: 2.25rem 1.85rem;
   width: 100%;
@@ -707,7 +774,7 @@ table.vs-table tr:last-child td { border-bottom: none; }
 
 /* ---------- Skeleton loading ---------- */
 .vs-skeleton {
-  background: linear-gradient(90deg, var(--vs-slate-50) 25%, #eef1f5 37%, var(--vs-slate-50) 63%);
+  background: linear-gradient(90deg, var(--vs-skeleton-a) 25%, var(--vs-skeleton-b) 37%, var(--vs-skeleton-a) 63%);
   background-size: 400% 100%;
   animation: vs-shimmer 1.4s ease infinite;
   border-radius: var(--vs-radius-sm);
@@ -734,6 +801,8 @@ table.vs-table tr:last-child td { border-bottom: none; }
 
 /* ---------- Modals ---------- */
 .modal-content {
+  background: var(--vs-card);
+  color: var(--vs-dark);
   border: none;
   border-radius: var(--vs-radius-lg);
   box-shadow: var(--vs-shadow-lg);
@@ -743,8 +812,12 @@ table.vs-table tr:last-child td { border-bottom: none; }
   padding: 1.1rem 1.25rem;
 }
 .modal-title {
+  color: var(--vs-dark);
   font-weight: 700;
   font-size: 1.05rem;
+}
+.modal-backdrop.show {
+  opacity: 0.6;
 }
 .modal-body {
   padding: 1.25rem;
@@ -762,20 +835,28 @@ table.vs-table tr:last-child td { border-bottom: none; }
 
 /* ---------- Dropdowns ---------- */
 .dropdown-menu {
+  background: var(--vs-card);
+  color: var(--vs-dark);
   border: 1px solid var(--vs-border);
   border-radius: var(--vs-radius);
   box-shadow: var(--vs-shadow-lg);
   padding: 0.4rem;
 }
 .dropdown-item {
+  color: var(--vs-dark);
   border-radius: var(--vs-radius-sm);
   padding: 0.5rem 0.7rem;
   font-size: 0.87rem;
   font-weight: 500;
 }
+.dropdown-item-text,
+.dropdown-item-text.text-muted {
+  color: var(--vs-slate) !important;
+}
 .dropdown-item:hover,
 .dropdown-item:focus {
   background: var(--vs-slate-50);
+  color: var(--vs-dark);
 }
 .dropdown-item.text-danger:hover {
   background: var(--vs-vence-hoje-bg);
@@ -796,13 +877,34 @@ table.vs-table tr:last-child td { border-bottom: none; }
   animation: vs-toast-in 0.2s ease;
 }
 .vs-toast svg { width: 16px; height: 16px; flex-shrink: 0; }
-.vs-toast.success { background: var(--vs-primary-dark); }
+.vs-toast.success { background: var(--vs-primary-700); }
 .vs-toast.danger { background: var(--vs-vence-hoje); }
 .vs-toast.info { background: var(--vs-dark); }
 
 @keyframes vs-toast-in {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Aparencia (acesso rapido no menu do usuario + secao em Configuracoes) ---------- */
+.vs-theme-opt.active {
+  background: var(--vs-primary-light);
+  border-color: var(--vs-primary-600);
+  color: var(--vs-primary-dark);
+}
+
+.vs-accent-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--vs-card);
+  box-shadow: 0 0 0 1px var(--vs-border-strong);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.vs-accent-dot.active {
+  box-shadow: 0 0 0 2px var(--vs-card), 0 0 0 4px var(--vs-dark);
 }
 
 /* ---------- Menu list (pagina "Mais") ---------- */

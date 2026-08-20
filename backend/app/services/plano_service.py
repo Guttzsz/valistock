@@ -7,10 +7,13 @@ from app.models.usuario import Usuario
 from app.utils.exceptions import PlanLimitError
 
 # Centralized plan limits. Nunca espalhar regras de plano pelo resto do codigo.
+# None = ilimitado. "products" conta SKUs cadastrados (Produto), nao unidades em estoque nem lotes.
 LIMITES = {
-    PlanoNome.GRATUITO: {"products": 50, "users": 3, "reports": False},
-    PlanoNome.BASICO: {"products": 500, "users": 15, "reports": True},
-    PlanoNome.PROFISSIONAL: {"products": None, "users": None, "reports": True},  # None = ilimitado
+    PlanoNome.GRATUITO: {"products": 50, "users": 1, "reports": False},
+    PlanoNome.ESSENCIAL: {"products": 300, "users": 3, "reports": True},
+    PlanoNome.PROFISSIONAL: {"products": 1500, "users": 10, "reports": True},
+    PlanoNome.EMPRESA: {"products": None, "users": 25, "reports": True},
+    PlanoNome.REDE: {"products": None, "users": None, "reports": True},
 }
 
 # Status em que a empresa ainda tem direito aos beneficios do plano pago. PAST_DUE fica incluso de

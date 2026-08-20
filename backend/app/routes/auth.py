@@ -10,7 +10,15 @@ from app.database import get_db
 from app.models.configuracao import Configuracao
 from app.models.empresa import Empresa
 from app.models.usuario import PerfilUsuario, Usuario
-from app.schemas.auth import AtualizarPerfilRequest, LoginRequest, RegisterRequest, TokenResponse, TrocarSenhaRequest, UsuarioMe
+from app.schemas.auth import (
+    AtualizarAparenciaRequest,
+    AtualizarPerfilRequest,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
+    TrocarSenhaRequest,
+    UsuarioMe,
+)
 from app.utils.exceptions import ConflictError, UnauthorizedError, ValidationErrorApp
 from app.utils.timezone import now
 
@@ -74,6 +82,16 @@ def me(current_user: CurrentUser = Depends(get_current_user), db: Session = Depe
 def atualizar_meu_perfil(payload: AtualizarPerfilRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
     usuario = db.get(Usuario, current_user.id)
     usuario.nome = payload.nome
+    db.commit()
+    db.refresh(usuario)
+    return UsuarioMe.model_validate(usuario)
+
+
+@router.put("/aparencia", response_model=UsuarioMe)
+def atualizar_minha_aparencia(payload: AtualizarAparenciaRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    usuario.theme = payload.theme
+    usuario.accent_color = payload.accent_color
     db.commit()
     db.refresh(usuario)
     return UsuarioMe.model_validate(usuario)

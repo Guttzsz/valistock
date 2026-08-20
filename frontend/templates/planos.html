@@ -6,6 +6,7 @@
 <title>Planos - ValiStock</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="../static/css/style.css" rel="stylesheet">
+<script src="../static/js/theme.js"></script>
 </head>
 <body>
 <div id="vs-topbar" class="vs-topbar"></div>
@@ -26,48 +27,41 @@
   <div class="vs-card mb-3">
     <div class="vs-kpi-label">Seu plano atual</div>
     <div class="vs-kpi-value" id="plano-atual" style="text-transform:capitalize;">-</div>
-    <div class="vs-muted small mt-1" id="plano-limites"></div>
     <div class="vs-muted small mt-1" id="plano-proxima-cobranca"></div>
-    <button class="btn btn-sm btn-outline-secondary mt-2 d-none" id="btn-portal">Gerenciar assinatura (Stripe)</button>
+
+    <div class="row g-3 mt-1">
+      <div class="col-12 col-sm-6">
+        <div class="d-flex justify-content-between small mb-1">
+          <span class="vs-muted">Produtos</span>
+          <span class="fw-semibold" id="uso-produtos-texto">-</span>
+        </div>
+        <div class="progress" style="height:8px;"><div class="progress-bar" id="uso-produtos-bar" style="width:0%;"></div></div>
+      </div>
+      <div class="col-12 col-sm-6">
+        <div class="d-flex justify-content-between small mb-1">
+          <span class="vs-muted">Usuarios</span>
+          <span class="fw-semibold" id="uso-usuarios-texto">-</span>
+        </div>
+        <div class="progress" style="height:8px;"><div class="progress-bar" id="uso-usuarios-bar" style="width:0%;"></div></div>
+      </div>
+    </div>
+
+    <button class="btn btn-sm btn-outline-secondary mt-3 d-none" id="btn-portal">Gerenciar assinatura (Stripe)</button>
   </div>
 
-  <div class="row g-3 mb-3">
-    <div class="col-12 col-md-4">
-      <div class="vs-card h-100 d-flex flex-column">
-        <h2 class="h6">Gratuito</h2>
-        <div class="h4 fw-bold mb-2">R$ 0<span class="fs-6 fw-normal vs-muted">/mes</span></div>
-        <ul class="small vs-muted flex-grow-1">
-          <li>Ate 50 produtos</li>
-          <li>Ate 3 usuarios</li>
-          <li>Alertas de vencimento</li>
-        </ul>
-        <button class="btn btn-outline-secondary" id="btn-plano-gratuito" disabled>Plano atual</button>
-      </div>
+  <div class="row g-3 mb-4" id="planos-cards"></div>
+
+  <div class="vs-card mb-3">
+    <h2 class="h6 mb-3">Comparativo de recursos</h2>
+
+    <div class="vs-table-wrap d-none d-lg-block">
+      <table class="vs-table" id="tabela-comparativo">
+        <thead><tr><th>Recurso</th><th>Gratis</th><th>Essencial</th><th>Profissional</th><th>Empresa</th></tr></thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div class="col-12 col-md-4">
-      <div class="vs-card h-100 d-flex flex-column border-success">
-        <h2 class="h6">Basico</h2>
-        <div class="h4 fw-bold mb-2">R$ 49,90<span class="fs-6 fw-normal vs-muted">/mes</span></div>
-        <ul class="small vs-muted flex-grow-1">
-          <li>Ate 500 produtos</li>
-          <li>Ate 15 usuarios</li>
-          <li>Relatorios avancados</li>
-        </ul>
-        <button class="btn btn-vs-primary" id="btn-plano-basico" onclick="assinarPlano('basico')">Assinar</button>
-      </div>
-    </div>
-    <div class="col-12 col-md-4">
-      <div class="vs-card h-100 d-flex flex-column">
-        <h2 class="h6">Profissional</h2>
-        <div class="h4 fw-bold mb-2">R$ 99,90<span class="fs-6 fw-normal vs-muted">/mes</span></div>
-        <ul class="small vs-muted flex-grow-1">
-          <li>Produtos e usuarios ilimitados</li>
-          <li>Relatorios avancados</li>
-          <li>Recursos futuros inclusos</li>
-        </ul>
-        <button class="btn btn-vs-primary" id="btn-plano-profissional" onclick="assinarPlano('profissional')">Assinar</button>
-      </div>
-    </div>
+
+    <div class="accordion d-lg-none" id="accordion-comparativo"></div>
   </div>
 
   <div class="vs-card">
@@ -93,6 +87,91 @@
 
   const FATURA_STATUS_LABELS = { paga: "Paga", pendente: "Pendente", falhou: "Falhou", reembolsada: "Reembolsada" };
 
+  const ORDEM_PLANOS = ["gratuito", "essencial", "profissional", "empresa", "rede"];
+
+  const PLANOS = [
+    {
+      slug: "gratuito", nome: "Gratis", preco: "R$ 0", periodo: "/mes",
+      descricao: "Para comecar a controlar validades sem custo.",
+      produtos: "Ate 50", usuarios: "1",
+      recursos: ["Ate 50 produtos", "1 usuario", "Alertas de vencimento basicos"],
+    },
+    {
+      slug: "essencial", nome: "Essencial", preco: "R$ 29,90", periodo: "/mes", destaque: true,
+      descricao: "Para pequenos mercados e estabelecimentos em crescimento.",
+      produtos: "Ate 300", usuarios: "Ate 3",
+      recursos: ["Ate 300 produtos", "Ate 3 usuarios", "Fornecedores", "Dashboard personalizavel"],
+    },
+    {
+      slug: "profissional", nome: "Profissional", preco: "R$ 59,90", periodo: "/mes",
+      descricao: "Para mercados com uma operacao maior.",
+      produtos: "Ate 1.500", usuarios: "Ate 10",
+      recursos: ["Ate 1.500 produtos", "Ate 10 usuarios", "Relatorios avancados", "Campos personalizados"],
+    },
+    {
+      slug: "empresa", nome: "Empresa", preco: "R$ 119,90", periodo: "/mes",
+      descricao: "Para estabelecimentos com maior volume de operacao.",
+      produtos: "Ilimitados", usuarios: "Ate 25",
+      recursos: ["Produtos ilimitados", "Ate 25 usuarios", "Auditoria completa", "Permissoes avancadas"],
+    },
+    {
+      slug: "rede", nome: "Rede", preco: "Fale conosco", periodo: "",
+      descricao: "Para empresas com varias unidades.",
+      produtos: "Ilimitados", usuarios: "Personalizado",
+      recursos: ["Multiplas unidades", "Produtos e usuarios ilimitados", "Atendimento dedicado"],
+    },
+  ];
+
+  const COMPARATIVO = [
+    { recurso: "Produtos", valores: ["50", "300", "1.500", "Ilimitado"] },
+    { recurso: "Usuarios", valores: ["1", "3", "10", "25"] },
+    { recurso: "Controle de validade", valores: ["check", "check", "check", "check"] },
+    { recurso: "Controle de estoque", valores: ["check", "check", "check", "check"] },
+    { recurso: "Alertas", valores: ["Basicos", "Personalizados", "Avancados", "Avancados"] },
+    { recurso: "Perdas", valores: ["check", "check", "check", "check"] },
+    { recurso: "Relatorios", valores: ["Basicos", "Basicos", "Avancados", "Avancados"] },
+    { recurso: "Fornecedores", valores: ["-", "check", "check", "check"] },
+    { recurso: "Dashboard personalizavel", valores: ["-", "check", "check", "check"] },
+    { recurso: "Campos personalizados", valores: ["-", "-", "check", "check"] },
+    { recurso: "Permissoes avancadas", valores: ["-", "-", "check", "check"] },
+    { recurso: "Auditoria", valores: ["-", "Basica", "Completa", "Completa"] },
+  ];
+
+  function celulaComparativo(valor) {
+    if (valor === "check") return `<span style="color:var(--vs-normal);" data-vs-icon="checkCircle" data-vs-icon-size="16"></span>`;
+    if (valor === "-") return `<span class="vs-muted">-</span>`;
+    return valor;
+  }
+
+  function renderComparativo() {
+    document.querySelector("#tabela-comparativo tbody").innerHTML = COMPARATIVO.map((linha) => `
+      <tr><td class="fw-semibold">${linha.recurso}</td>${linha.valores.map((v) => `<td>${celulaComparativo(v)}</td>`).join("")}</tr>
+    `).join("");
+
+    const nomes = ["Gratis", "Essencial", "Profissional", "Empresa"];
+    document.getElementById("accordion-comparativo").innerHTML = nomes.map((nome, i) => `
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button ${i > 0 ? "collapsed" : ""}" type="button" data-bs-toggle="collapse" data-bs-target="#comp-${i}">${nome}</button>
+        </h2>
+        <div id="comp-${i}" class="accordion-collapse collapse ${i === 0 ? "show" : ""}" data-bs-parent="#accordion-comparativo">
+          <div class="accordion-body">
+            <ul class="list-unstyled small mb-0">
+              ${COMPARATIVO.map((linha) => `<li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="vs-muted">${linha.recurso}</span><span>${celulaComparativo(linha.valores[i])}</span>
+              </li>`).join("")}
+            </ul>
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    if (typeof VsApplyIcons === "function") {
+      VsApplyIcons(document.getElementById("tabela-comparativo"));
+      VsApplyIcons(document.getElementById("accordion-comparativo"));
+    }
+  }
+
   window.assinarPlano = async function (plano) {
     try {
       const { url } = await Api.subscription.checkout(plano);
@@ -114,14 +193,65 @@
   document.getElementById("btn-portal").addEventListener("click", abrirPortal);
   document.getElementById("btn-atualizar-pagamento").addEventListener("click", abrirPortal);
 
+  function renderCards(planoAtual) {
+    const rankAtual = ORDEM_PLANOS.indexOf(planoAtual);
+
+    document.getElementById("planos-cards").innerHTML = PLANOS.map((p) => {
+      const rank = ORDEM_PLANOS.indexOf(p.slug);
+      const ehAtual = p.slug === planoAtual;
+
+      let botao;
+      if (p.slug === "rede") {
+        botao = `<a href="mailto:contato@valistock.com.br?subject=Plano Rede ValiStock" class="btn btn-outline-secondary">Falar com a equipe</a>`;
+      } else if (ehAtual) {
+        botao = `<button class="btn btn-outline-secondary" disabled>Plano atual</button>`;
+      } else if (rank > rankAtual) {
+        botao = `<button class="btn btn-vs-primary" onclick="assinarPlano('${p.slug}')">Fazer upgrade</button>`;
+      } else if (p.slug === "gratuito") {
+        botao = `<button class="btn btn-outline-secondary" onclick="abrirPortal()">Cancelar assinatura</button>`;
+      } else {
+        botao = `<button class="btn btn-outline-secondary" onclick="assinarPlano('${p.slug}')">Fazer downgrade</button>`;
+      }
+
+      return `
+        <div class="col-12 col-sm-6 col-lg">
+          <div class="vs-card h-100 d-flex flex-column position-relative ${p.destaque ? "border-primary" : ""}" style="${p.destaque ? "border-width:2px;border-color:var(--vs-primary-600) !important;" : ""}">
+            ${p.destaque ? `<span class="vs-badge position-absolute" style="top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--vs-primary-600);color:#fff;">MAIS ESCOLHIDO</span>` : ""}
+            <h2 class="h6 mt-2">${p.nome}</h2>
+            <div class="h4 fw-bold mb-1">${p.preco}<span class="fs-6 fw-normal vs-muted">${p.periodo}</span></div>
+            <p class="small vs-muted">${p.descricao}</p>
+            <ul class="small vs-muted flex-grow-1 ps-3">
+              ${p.recursos.map((r) => `<li>${r}</li>`).join("")}
+            </ul>
+            ${botao}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    if (typeof VsApplyIcons === "function") VsApplyIcons(document.getElementById("planos-cards"));
+  }
+
+  function barraUso(usados, limite) {
+    if (limite === null || limite === undefined) return { texto: `${usados} (ilimitado)`, pct: 8 };
+    const pct = Math.min(100, Math.round((usados / Math.max(limite, 1)) * 100));
+    return { texto: `${usados} / ${limite}`, pct };
+  }
+
   async function carregar() {
     try {
       const [sub, faturas] = await Promise.all([Api.subscription.atual(), Api.subscription.faturas()]);
 
       document.getElementById("plano-atual").textContent = sub.plano;
-      const produtos = sub.limite_produtos === null ? "ilimitados" : sub.limite_produtos;
-      const usuarios = sub.limite_usuarios === null ? "ilimitados" : sub.limite_usuarios;
-      document.getElementById("plano-limites").textContent = `Ate ${produtos} produtos · Ate ${usuarios} usuarios · status: ${sub.status}`;
+      renderCards(sub.plano);
+
+      const uProdutos = barraUso(sub.produtos_usados, sub.limite_produtos);
+      document.getElementById("uso-produtos-texto").textContent = uProdutos.texto;
+      document.getElementById("uso-produtos-bar").style.width = `${uProdutos.pct}%`;
+
+      const uUsuarios = barraUso(sub.usuarios_usados, sub.limite_usuarios);
+      document.getElementById("uso-usuarios-texto").textContent = uUsuarios.texto;
+      document.getElementById("uso-usuarios-bar").style.width = `${uUsuarios.pct}%`;
 
       if (sub.periodo_atual_fim) {
         const texto = sub.cancelar_ao_fim_periodo
@@ -137,16 +267,6 @@
       if (sub.status === "past_due" || sub.status === "unpaid") {
         document.getElementById("vs-alerta-pagamento").classList.remove("d-none");
       }
-
-      ["gratuito", "basico", "profissional"].forEach((p) => {
-        const btn = document.getElementById(`btn-plano-${p}`);
-        if (p === sub.plano) {
-          btn.textContent = "Plano atual";
-          btn.disabled = true;
-          btn.classList.remove("btn-vs-primary");
-          btn.classList.add("btn-outline-secondary");
-        }
-      });
 
       document.querySelector("#tabela-faturas tbody").innerHTML = faturas.length
         ? faturas.map((f) => `
@@ -164,6 +284,7 @@
     }
   }
 
+  renderComparativo();
   carregar();
 
   const params = new URLSearchParams(window.location.search);

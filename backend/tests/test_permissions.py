@@ -1,7 +1,12 @@
+from app.models.subscription import PlanoNome
+from app.services.plano_service import LIMITES
 from tests.conftest import auth_headers, registrar_empresa
 
 
-def _criar_funcionario(client, headers):
+def _criar_funcionario(client, headers, monkeypatch):
+    # Plano Gratuito permite so 1 usuario; estes testes cobrem permissao por perfil,
+    # nao limite de plano (esse ja tem cobertura propria em test_plano_limits.py).
+    monkeypatch.setitem(LIMITES[PlanoNome.GRATUITO], "users", 5)
     resp = client.post(
         "/api/usuarios",
         json={"nome": "Funcionario", "email": "func@example.com", "senha": "SenhaForte123!", "perfil": "funcionario"},
@@ -11,16 +16,16 @@ def _criar_funcionario(client, headers):
     return resp.json()
 
 
-def test_admin_pode_criar_usuario(client):
+def test_admin_pode_criar_usuario(client, monkeypatch):
     data = registrar_empresa(client, "a")
     headers = auth_headers(data["access_token"])
-    _criar_funcionario(client, headers)
+    _criar_funcionario(client, headers, monkeypatch)
 
 
-def test_funcionario_nao_pode_criar_usuario(client):
+def test_funcionario_nao_pode_criar_usuario(client, monkeypatch):
     data = registrar_empresa(client, "a")
     headers_admin = auth_headers(data["access_token"])
-    _criar_funcionario(client, headers_admin)
+    _criar_funcionario(client, headers_admin, monkeypatch)
 
     login = client.post("/api/auth/login", json={"email": "func@example.com", "senha": "SenhaForte123!"}).json()
     headers_func = auth_headers(login["access_token"])
@@ -33,10 +38,10 @@ def test_funcionario_nao_pode_criar_usuario(client):
     assert resp.status_code == 403
 
 
-def test_funcionario_pode_criar_produto(client):
+def test_funcionario_pode_criar_produto(client, monkeypatch):
     data = registrar_empresa(client, "a")
     headers_admin = auth_headers(data["access_token"])
-    _criar_funcionario(client, headers_admin)
+    _criar_funcionario(client, headers_admin, monkeypatch)
 
     login = client.post("/api/auth/login", json={"email": "func@example.com", "senha": "SenhaForte123!"}).json()
     headers_func = auth_headers(login["access_token"])
@@ -47,10 +52,10 @@ def test_funcionario_pode_criar_produto(client):
     assert resp.status_code == 201
 
 
-def test_funcionario_nao_pode_alterar_configuracoes(client):
+def test_funcionario_nao_pode_alterar_configuracoes(client, monkeypatch):
     data = registrar_empresa(client, "a")
     headers_admin = auth_headers(data["access_token"])
-    _criar_funcionario(client, headers_admin)
+    _criar_funcionario(client, headers_admin, monkeypatch)
 
     login = client.post("/api/auth/login", json={"email": "func@example.com", "senha": "SenhaForte123!"}).json()
     headers_func = auth_headers(login["access_token"])

@@ -4,8 +4,9 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key"
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake_for_pytest"
 os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_secret_for_pytest"
-os.environ["STRIPE_PRICE_BASIC"] = "price_test_basico"
-os.environ["STRIPE_PRICE_PRO"] = "price_test_profissional"
+os.environ["STRIPE_PRICE_ESSENCIAL"] = "price_test_essencial"
+os.environ["STRIPE_PRICE_PROFISSIONAL"] = "price_test_profissional"
+os.environ["STRIPE_PRICE_EMPRESA"] = "price_test_empresa"
 
 import pytest
 from fastapi.testclient import TestClient

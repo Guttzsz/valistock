@@ -37,7 +37,7 @@ def test_assinatura_cancelada_volta_para_plano_gratuito(client, db_session):
     data = registrar_empresa(client, "a")
     empresa_id = UUID(data["usuario"]["empresa_id"])
 
-    sub = Subscription(empresa_id=empresa_id, plano=PlanoNome.BASICO, status=StatusAssinatura.CANCELED)
+    sub = Subscription(empresa_id=empresa_id, plano=PlanoNome.ESSENCIAL, status=StatusAssinatura.CANCELED)
     db_session.add(sub)
     db_session.commit()
 
@@ -56,3 +56,22 @@ def test_assinatura_past_due_mantem_direito_ao_plano(client, db_session):
     db_session.commit()
 
     assert get_plano_atual(db_session, empresa_id) == PlanoNome.PROFISSIONAL
+
+
+def test_plano_gratuito_bloqueia_apos_1_usuario(client, db_session):
+    """Regra nova: o plano Gratuito permite so 1 usuario (o admin que se cadastrou)."""
+    data = registrar_empresa(client, "a")
+    headers = auth_headers(data["access_token"])
+
+    resp = client.post(
+        "/api/usuarios",
+        json={"nome": "Func", "email": "func_limite@example.com", "senha": "SenhaForte123!", "perfil": "funcionario"},
+        headers=headers,
+    )
+    assert resp.status_code == 402
+
+
+def test_plano_empresa_produtos_ilimitados_mas_usuarios_limitados_a_25():
+    limites = LIMITES[PlanoNome.EMPRESA]
+    assert limites["products"] is None
+    assert limites["users"] == 25

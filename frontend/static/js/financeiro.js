@@ -29,17 +29,16 @@ function formatOrDados(value, formatter) {
 /* Mesma paleta categorica validada (dataviz skill) usada em relatorios.js. */
 const CATEGORICAL_PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
 const SUCCESS_HUE = "#16a34a"; // receita: serie unica, semantica positiva (marca do ValiStock)
-const INK_MUTED = "#898781";
-const INK_SECONDARY = "#52514e";
-const GRIDLINE = "#e1e0d9";
 
 Chart.defaults.font.family = "'Inter', 'Segoe UI', -apple-system, sans-serif";
-Chart.defaults.color = INK_SECONDARY;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.color = INK_SECONDARY;
 
 async function carregarFinanceiro() {
   try {
+    const cores = VsTheme.getChartColors();
+    Chart.defaults.color = cores.inkSecondary;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.color = cores.inkSecondary;
+
     const [dashboard, receitaMensal, receitaPorPlano, assinaturas, pagamentos] = await Promise.all([
       Api.financeiro.dashboard(),
       Api.financeiro.receitaMensal(),
@@ -72,7 +71,7 @@ async function carregarFinanceiro() {
           pointRadius: 4,
           pointHoverRadius: 5,
           pointBackgroundColor: SUCCESS_HUE,
-          pointBorderColor: "#fff",
+          pointBorderColor: cores.surface,
           pointBorderWidth: 2,
           fill: true,
           tension: 0.3,
@@ -82,8 +81,8 @@ async function carregarFinanceiro() {
         plugins: { legend: { display: false } }, // serie unica: titulo do card ja diz o que e
         responsive: true,
         scales: {
-          x: { grid: { display: false }, ticks: { color: INK_MUTED } },
-          y: { grid: { color: GRIDLINE }, border: { display: false }, ticks: { color: INK_MUTED } },
+          x: { grid: { display: false }, ticks: { color: cores.inkMuted } },
+          y: { grid: { color: cores.grid }, border: { display: false }, ticks: { color: cores.inkMuted } },
         },
       },
     });
@@ -93,7 +92,7 @@ async function carregarFinanceiro() {
       type: "doughnut",
       data: {
         labels: comClientes.map((p) => `${p.plano} (${p.quantidade})`),
-        datasets: [{ data: comClientes.map((p) => p.quantidade), backgroundColor: CATEGORICAL_PALETTE, borderColor: "#fff", borderWidth: 2 }],
+        datasets: [{ data: comClientes.map((p) => p.quantidade), backgroundColor: CATEGORICAL_PALETTE, borderColor: cores.surface, borderWidth: 2 }],
       },
       options: { responsive: true, plugins: { legend: { position: "bottom" } } },
     });

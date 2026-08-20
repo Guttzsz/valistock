@@ -18,7 +18,7 @@ def _post_webhook(client, event: dict):
     )
 
 
-def _evento_subscription(evento_id, tipo, empresa_id, status="active", price_id="price_test_basico", unit_amount=4990):
+def _evento_subscription(evento_id, tipo, empresa_id, status="active", price_id="price_test_essencial", unit_amount=4990):
     ts = int(time.time())
     return {
         "id": evento_id,
@@ -90,7 +90,7 @@ def test_webhook_subscription_created_sincroniza_assinatura(client, db_session):
 
     sub = db_session.query(Subscription).filter(Subscription.empresa_id == empresa_id).first()
     assert sub.status == StatusAssinatura.ACTIVE
-    assert sub.plano == PlanoNome.BASICO
+    assert sub.plano == PlanoNome.ESSENCIAL
     assert sub.valor_mensal == Decimal("49.90")
     assert sub.stripe_customer_id == "cus_test_123"
 

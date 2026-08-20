@@ -32,7 +32,7 @@ def test_financeiro_agrega_todas_as_empresas(client, db_session):
 
     sub_a = Subscription(
         empresa_id=empresa_a["usuario"]["empresa_id"],
-        plano=PlanoNome.BASICO,
+        plano=PlanoNome.ESSENCIAL,
         status=StatusAssinatura.ACTIVE,
         valor_mensal=Decimal("49.90"),
         stripe_customer_id="cus_a",
@@ -85,7 +85,7 @@ def test_receita_por_plano_soma_corretamente(client, db_session):
     db_session.add(
         Subscription(
             empresa_id=empresa_a["usuario"]["empresa_id"],
-            plano=PlanoNome.BASICO,
+            plano=PlanoNome.ESSENCIAL,
             status=StatusAssinatura.ACTIVE,
             valor_mensal=Decimal("49.90"),
         )
@@ -94,6 +94,6 @@ def test_receita_por_plano_soma_corretamente(client, db_session):
 
     resp = client.get("/api/financeiro/receita-por-plano", headers=headers_a)
     assert resp.status_code == 200
-    basico = next(p for p in resp.json() if p["plano"] == "basico")
-    assert Decimal(basico["receita_mensal"]) == Decimal("49.90")
-    assert Decimal(basico["percentual"]) == Decimal("100.0")
+    essencial = next(p for p in resp.json() if p["plano"] == "essencial")
+    assert Decimal(essencial["receita_mensal"]) == Decimal("49.90")
+    assert Decimal(essencial["percentual"]) == Decimal("100.0")

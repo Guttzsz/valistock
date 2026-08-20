@@ -1,4 +1,5 @@
 Auth.requireAuth();
+if (typeof VsApplyIcons === "function") VsApplyIcons();
 
 const CATEGORIAS_SUGERIDAS = ["Laticinios", "Bebidas", "Hortifruti", "Carnes", "Padaria", "Congelados", "Higiene", "Limpeza"];
 const TOTAL_ETAPAS = 9;
@@ -120,6 +121,36 @@ document.getElementById("step-7-continuar").addEventListener("click", async () =
   } catch (err) {
     // nao bloqueia o fluxo se as preferencias falharem ao salvar
   }
+  await salvarEtapa({ etapa: 8 });
+  mostrarEtapa(8);
+});
+
+// Etapa 8: aparencia
+function renderCoresAparencia() {
+  const container = document.getElementById("aparencia-cor-options");
+  const { accent } = VsTheme.get();
+  container.innerHTML = Object.entries(VS_ACCENT_HEX).map(([nome, hex]) => `
+    <button type="button" class="vs-accent-dot ${nome === accent ? "active" : ""}" data-accent-opt="${nome}" style="background:${hex}" title="${nome}"></button>
+  `).join("");
+  container.querySelectorAll(".vs-accent-dot").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const { theme } = VsTheme.get();
+      await VsTheme.set(theme, btn.dataset.accentOpt);
+      container.querySelectorAll(".vs-accent-dot").forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
+}
+renderCoresAparencia();
+
+document.querySelectorAll("#aparencia-tema-options .vs-theme-opt").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const { accent } = VsTheme.get();
+    await VsTheme.set(btn.dataset.themeOpt, accent);
+    document.querySelectorAll("#aparencia-tema-options .vs-theme-opt").forEach((b) => b.classList.toggle("active", b === btn));
+  });
+});
+
+document.getElementById("step-8-continuar").addEventListener("click", async () => {
   await salvarEtapa({ etapa: 9 });
   mostrarEtapa(9);
 });

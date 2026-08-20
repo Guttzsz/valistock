@@ -1,6 +1,7 @@
 # Env
 .env
 .env.local
+.env.*
 *.env
 
 # Python
@@ -30,3 +31,6 @@ Thumbs.db
 # Logs
 *.log
 .render_tmp_sub.json
+
+# Playwright CLI scratch state
+.playwright-cli/

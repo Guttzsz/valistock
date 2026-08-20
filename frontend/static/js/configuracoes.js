@@ -1,5 +1,32 @@
 initNav("mais");
 
+function carregarAparencia() {
+  const { theme, accent } = VsTheme.get();
+
+  document.querySelectorAll("#aparencia-tema-options .vs-theme-opt").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.themeOpt === theme);
+    btn.addEventListener("click", async () => {
+      const atual = VsTheme.get();
+      await VsTheme.set(btn.dataset.themeOpt, atual.accent);
+      document.querySelectorAll("#aparencia-tema-options .vs-theme-opt").forEach((b) => b.classList.toggle("active", b === btn));
+      toast("Aparencia atualizada.");
+    });
+  });
+
+  const coresContainer = document.getElementById("aparencia-cor-options");
+  coresContainer.innerHTML = Object.entries(VS_ACCENT_HEX).map(([nome, hex]) => `
+    <button type="button" class="vs-accent-dot ${nome === accent ? "active" : ""}" data-accent-opt="${nome}" style="background:${hex}" title="${nome}"></button>
+  `).join("");
+  coresContainer.querySelectorAll(".vs-accent-dot").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const atual = VsTheme.get();
+      await VsTheme.set(atual.theme, btn.dataset.accentOpt);
+      coresContainer.querySelectorAll(".vs-accent-dot").forEach((b) => b.classList.toggle("active", b === btn));
+      toast("Cor de destaque atualizada.");
+    });
+  });
+}
+
 async function carregarConfig() {
   try {
     const config = await Api.configuracoes.get();
@@ -138,6 +165,7 @@ document.getElementById("form-senha").addEventListener("submit", async (e) => {
   }
 });
 
+carregarAparencia();
 carregarConfig();
 carregarEmpresa();
 carregarNotificacoes();

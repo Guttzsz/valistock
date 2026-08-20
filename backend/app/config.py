@@ -23,8 +23,9 @@ class Settings(BaseSettings):
     stripe_secret_key: str = ""
     stripe_publishable_key: str = ""
     stripe_webhook_secret: str = ""
-    stripe_price_basic: str = ""
-    stripe_price_pro: str = ""
+    stripe_price_essencial: str = ""
+    stripe_price_profissional: str = ""
+    stripe_price_empresa: str = ""
     stripe_success_url: str = "http://localhost:5500/templates/planos.html?status=success"
     stripe_cancel_url: str = "http://localhost:5500/templates/planos.html?status=cancel"
 

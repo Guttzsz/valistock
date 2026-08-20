@@ -1,5 +1,47 @@
 /* ValiStock - topbar + nav desktop + bottom mobile nav, injetados em todas as paginas autenticadas. */
 
+function renderAparenciaRapida() {
+  const { theme, accent } = VsTheme.get();
+  const temas = [
+    { valor: "dia", icon: "sun", titulo: "Dia" },
+    { valor: "noite", icon: "moon", titulo: "Noite" },
+    { valor: "automatico", icon: "monitor", titulo: "Automatico" },
+  ];
+  return `
+    <li class="px-2 py-2">
+      <div class="small fw-semibold vs-muted mb-2 px-1">Aparencia</div>
+      <div class="d-flex gap-1 mb-2" id="vs-quick-theme">
+        ${temas.map((t) => `
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill vs-theme-opt ${t.valor === theme ? "active" : ""}" data-theme-opt="${t.valor}" title="${t.titulo}">${VsIcon(t.icon, { size: 14 })}</button>
+        `).join("")}
+      </div>
+      <div class="d-flex flex-wrap gap-2 px-1" id="vs-quick-accent">
+        ${Object.entries(VS_ACCENT_HEX).map(([nome, hex]) => `
+          <button type="button" class="vs-accent-dot ${nome === accent ? "active" : ""}" data-accent-opt="${nome}" style="background:${hex}" title="${nome}"></button>
+        `).join("")}
+      </div>
+    </li>
+    <li><hr class="dropdown-divider"></li>
+  `;
+}
+
+function ligarAparenciaRapida(container) {
+  container.querySelectorAll(".vs-theme-opt").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const { accent } = VsTheme.get();
+      await VsTheme.set(btn.dataset.themeOpt, accent);
+      container.querySelectorAll(".vs-theme-opt").forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
+  container.querySelectorAll(".vs-accent-dot").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const { theme } = VsTheme.get();
+      await VsTheme.set(theme, btn.dataset.accentOpt);
+      container.querySelectorAll(".vs-accent-dot").forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
+}
+
 const NAV_ITEMS = [
   { href: "dashboard.html", icon: "home", label: "Inicio", key: "dashboard" },
   { href: "produtos.html", icon: "box", label: "Produtos", key: "produtos" },
@@ -63,9 +105,10 @@ function renderTopbar(activeKey) {
       <button class="vs-avatar-btn" data-bs-toggle="dropdown" aria-expanded="false">
         ${(usuario?.nome || "?").charAt(0).toUpperCase()}
       </button>
-      <ul class="dropdown-menu dropdown-menu-end">
+      <ul class="dropdown-menu dropdown-menu-end" data-bs-auto-close="outside">
         <li><span class="dropdown-item-text small text-muted">${usuario?.nome || ""}<br>${usuario?.email || ""}</span></li>
         <li><hr class="dropdown-divider"></li>
+        ${renderAparenciaRapida()}
         <li><a class="dropdown-item d-flex align-items-center gap-2" href="configuracoes.html">${VsIcon("settings", { size: 16, class: "vs-muted" })} Configuracoes</a></li>
         <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#" id="vs-logout-link">${VsIcon("logOut", { size: 16 })} Sair</a></li>
       </ul>
@@ -75,6 +118,7 @@ function renderTopbar(activeKey) {
     e.preventDefault();
     Auth.logout();
   });
+  ligarAparenciaRapida(el);
 }
 
 function renderBottomNav(activeKey) {

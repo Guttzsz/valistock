@@ -26,9 +26,11 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-      - key: STRIPE_PRICE_BASIC
+      - key: STRIPE_PRICE_ESSENCIAL
         sync: false
-      - key: STRIPE_PRICE_PRO
+      - key: STRIPE_PRICE_PROFISSIONAL
+        sync: false
+      - key: STRIPE_PRICE_EMPRESA
         sync: false
       - key: STRIPE_SUCCESS_URL
         value: https://valistock.vercel.app/templates/planos.html?status=success

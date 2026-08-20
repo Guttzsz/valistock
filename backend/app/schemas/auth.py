@@ -2,6 +2,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
+from app.models.usuario import CorDestaque, TemaUsuario
+
 
 class RegisterRequest(BaseModel):
     empresa_nome_fantasia: str = Field(min_length=2, max_length=150)
@@ -25,6 +27,11 @@ class TrocarSenhaRequest(BaseModel):
     senha_nova: str = Field(min_length=8, max_length=100)
 
 
+class AtualizarAparenciaRequest(BaseModel):
+    theme: TemaUsuario
+    accent_color: CorDestaque
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -38,6 +45,8 @@ class UsuarioMe(BaseModel):
     email: EmailStr
     perfil: str
     super_admin: bool = False
+    theme: TemaUsuario
+    accent_color: CorDestaque
 
     model_config = {"from_attributes": True}
 

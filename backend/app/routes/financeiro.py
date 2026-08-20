@@ -24,7 +24,7 @@ from app.utils.timezone import today
 
 router = APIRouter(prefix="/api/financeiro", tags=["financeiro"])
 
-PLANOS_PAGOS = (PlanoNome.BASICO, PlanoNome.PROFISSIONAL)
+PLANOS_PAGOS = (PlanoNome.ESSENCIAL, PlanoNome.PROFISSIONAL, PlanoNome.EMPRESA, PlanoNome.REDE)
 
 
 @router.get("/dashboard", response_model=FinanceiroDashboardOut)

@@ -5,14 +5,8 @@ initNav("mais");
    contra a superficie #ffffff dos cards do ValiStock. */
 const CATEGORICAL_PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
 const DANGER_HUE = "#dc2626"; // perdas: hue semantico unico (nao e identidade categorica, e uma unica serie negativa)
-const INK_MUTED = "#898781";
-const INK_SECONDARY = "#52514e";
-const GRIDLINE = "#e1e0d9";
 
 Chart.defaults.font.family = "'Inter', 'Segoe UI', -apple-system, sans-serif";
-Chart.defaults.color = INK_SECONDARY;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.color = INK_SECONDARY;
 
 /* Cor segue a entidade, nunca a posicao no ranking (anti-padrao "recolor-on-filter"):
    trocar o filtro de periodo pode reordenar categorias por valor, mas cada nome de
@@ -47,6 +41,11 @@ async function carregarRelatorios() {
 
     destroyCharts();
 
+    const cores = VsTheme.getChartColors();
+    Chart.defaults.color = cores.inkSecondary;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.color = cores.inkSecondary;
+
     charts.perdasDia = new Chart(document.getElementById("chart-perdas-dia"), {
       type: "line",
       data: {
@@ -60,7 +59,7 @@ async function carregarRelatorios() {
           pointRadius: 4,
           pointHoverRadius: 5,
           pointBackgroundColor: DANGER_HUE,
-          pointBorderColor: "#fff",
+          pointBorderColor: cores.surface,
           pointBorderWidth: 2,
           fill: true,
           tension: 0.3,
@@ -70,8 +69,8 @@ async function carregarRelatorios() {
         plugins: { legend: { display: false } }, // serie unica: titulo do card ja diz o que e
         responsive: true,
         scales: {
-          x: { grid: { display: false }, ticks: { color: INK_MUTED } },
-          y: { grid: { color: GRIDLINE }, border: { display: false }, ticks: { color: INK_MUTED } },
+          x: { grid: { display: false }, ticks: { color: cores.inkMuted } },
+          y: { grid: { color: cores.grid }, border: { display: false }, ticks: { color: cores.inkMuted } },
         },
       },
     });
@@ -81,7 +80,7 @@ async function carregarRelatorios() {
       type: "doughnut",
       data: {
         labels: nomesCategorias,
-        datasets: [{ data: perdas.categorias_mais_perdas.map((c) => c.valor), backgroundColor: coresEstaveis(nomesCategorias), borderColor: "#fff", borderWidth: 2 }],
+        datasets: [{ data: perdas.categorias_mais_perdas.map((c) => c.valor), backgroundColor: coresEstaveis(nomesCategorias), borderColor: cores.surface, borderWidth: 2 }],
       },
       options: { responsive: true, plugins: { legend: { position: "bottom" } } },
     });
@@ -103,8 +102,8 @@ async function carregarRelatorios() {
         plugins: { legend: { display: false } }, // ranking de uma unica medida: cor unica = nao e identidade
         responsive: true,
         scales: {
-          x: { grid: { color: GRIDLINE }, border: { display: false }, ticks: { color: INK_MUTED } },
-          y: { grid: { display: false }, ticks: { color: INK_SECONDARY } },
+          x: { grid: { color: cores.grid }, border: { display: false }, ticks: { color: cores.inkMuted } },
+          y: { grid: { display: false }, ticks: { color: cores.inkSecondary } },
         },
       },
     });

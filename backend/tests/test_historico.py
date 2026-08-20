@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from app.models.subscription import PlanoNome
+from app.services.plano_service import LIMITES
 from tests.conftest import auth_headers, registrar_empresa
 
 
@@ -79,7 +81,8 @@ def test_empresa_a_nao_ve_historico_da_empresa_b(client):
     assert resp.json() == []
 
 
-def test_funcionario_nao_pode_ver_historico(client):
+def test_funcionario_nao_pode_ver_historico(client, monkeypatch):
+    monkeypatch.setitem(LIMITES[PlanoNome.GRATUITO], "users", 5)
     data = registrar_empresa(client, "a")
     headers_admin = auth_headers(data["access_token"])
     client.post(

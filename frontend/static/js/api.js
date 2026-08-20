@@ -102,6 +102,7 @@ const Api = {
   permissoes: () => apiRequest("/api/auth/permissoes"),
   atualizarPerfil: (payload) => apiRequest("/api/auth/perfil", { method: "PUT", body: payload }),
   trocarSenha: (payload) => apiRequest("/api/auth/senha", { method: "PUT", body: payload }),
+  atualizarAparencia: (payload) => apiRequest("/api/auth/aparencia", { method: "PUT", body: payload }),
 
   dashboard: () => apiRequest("/api/dashboard"),
 

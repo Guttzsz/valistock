@@ -29,10 +29,12 @@ STRIPE_STATUS_MAP = {
 
 
 def _price_para_plano(price_id: str | None) -> PlanoNome | None:
-    if price_id and price_id == settings.stripe_price_basic:
-        return PlanoNome.BASICO
-    if price_id and price_id == settings.stripe_price_pro:
+    if price_id and price_id == settings.stripe_price_essencial:
+        return PlanoNome.ESSENCIAL
+    if price_id and price_id == settings.stripe_price_profissional:
         return PlanoNome.PROFISSIONAL
+    if price_id and price_id == settings.stripe_price_empresa:
+        return PlanoNome.EMPRESA
     return None
 
 
@@ -84,7 +86,7 @@ def obter_ou_criar_customer(db: Session, empresa: Empresa) -> str:
 
 
 def criar_checkout_session(db: Session, empresa: Empresa, price_id: str) -> str:
-    if price_id not in (settings.stripe_price_basic, settings.stripe_price_pro):
+    if price_id not in (settings.stripe_price_essencial, settings.stripe_price_profissional, settings.stripe_price_empresa):
         raise ValidationErrorApp("Plano invalido.")
 
     customer_id = obter_ou_criar_customer(db, empresa)

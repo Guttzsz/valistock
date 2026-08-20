@@ -13,6 +13,8 @@ class SubscriptionOut(BaseModel):
     status: StatusAssinatura
     limite_produtos: int | None
     limite_usuarios: int | None
+    produtos_usados: int = 0
+    usuarios_usados: int = 0
     valor_mensal: Decimal = Decimal(0)
     periodo_atual_fim: date | None = None
     trial_fim: date | None = None
@@ -21,7 +23,7 @@ class SubscriptionOut(BaseModel):
 
 
 class CheckoutRequest(BaseModel):
-    plano: str  # "basico" ou "profissional"
+    plano: str  # "essencial", "profissional" ou "empresa"
 
 
 class CheckoutResponse(BaseModel):

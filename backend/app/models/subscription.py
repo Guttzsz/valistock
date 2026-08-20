@@ -14,8 +14,10 @@ from app.utils.timezone import now
 
 class PlanoNome(str, enum.Enum):
     GRATUITO = "gratuito"
-    BASICO = "basico"
+    ESSENCIAL = "essencial"
     PROFISSIONAL = "profissional"
+    EMPRESA = "empresa"
+    REDE = "rede"
 
 
 class StatusAssinatura(str, enum.Enum):

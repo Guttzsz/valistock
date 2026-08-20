@@ -33,6 +33,10 @@ const VS_ICON_PATHS = {
   chevronRight: '<path d="M9 6l6 6-6 6"/>',
   chevronLeft: '<path d="M15 6l-6 6 6 6"/>',
   download: '<path d="M12 3v13"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/>',
+  sun: '<circle cx="12" cy="12" r="4.3"/><path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/>',
+  moon: '<path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z"/>',
+  monitor: '<rect x="2.5" y="4" width="19" height="13" rx="1.8"/><path d="M8 20.5h8M12 17v3.5"/>',
+  palette: '<path d="M12 2.5a9.5 9.5 0 1 0 0 19c1.1 0 2-.9 2-2 0-.5-.2-.9-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1.1.9-2 2-2H17a4.5 4.5 0 0 0 4.5-4.5C21.5 6.5 17.2 2.5 12 2.5Z"/><circle cx="7.2" cy="12" r="1.15"/><circle cx="8.6" cy="7.8" r="1.15"/><circle cx="13" cy="6.5" r="1.15"/><circle cx="17" cy="9" r="1.15"/>',
 };
 
 function VsIcon(name, opts) {

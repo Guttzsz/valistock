@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 
+from app.models.subscription import PlanoNome
 from app.services import stripe_service
+from app.services.plano_service import LIMITES
 from tests.conftest import auth_headers, registrar_empresa
 
 
@@ -13,7 +15,7 @@ def test_checkout_cria_sessao_stripe(client, monkeypatch):
         stripe_service.stripe.checkout.Session, "create", lambda **kw: SimpleNamespace(url="https://checkout.stripe.com/fake")
     )
 
-    resp = client.post("/api/subscriptions/checkout", json={"plano": "basico"}, headers=headers)
+    resp = client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers)
     assert resp.status_code == 200
     assert resp.json()["url"] == "https://checkout.stripe.com/fake"
 
@@ -32,7 +34,7 @@ def test_checkout_reusa_customer_existente(client, monkeypatch, db_session):
         stripe_service.stripe.checkout.Session, "create", lambda **kw: SimpleNamespace(url="https://checkout.stripe.com/fake")
     )
 
-    client.post("/api/subscriptions/checkout", json={"plano": "basico"}, headers=headers)
+    client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers)
     client.post("/api/subscriptions/checkout", json={"plano": "profissional"}, headers=headers)
 
     assert len(chamadas_customer) == 1
@@ -46,7 +48,8 @@ def test_checkout_com_plano_invalido_falha(client):
     assert resp.status_code == 422
 
 
-def test_funcionario_nao_pode_criar_checkout(client):
+def test_funcionario_nao_pode_criar_checkout(client, monkeypatch):
+    monkeypatch.setitem(LIMITES[PlanoNome.GRATUITO], "users", 5)
     data = registrar_empresa(client, "a")
     headers_admin = auth_headers(data["access_token"])
     client.post(
@@ -57,7 +60,7 @@ def test_funcionario_nao_pode_criar_checkout(client):
     login = client.post("/api/auth/login", json={"email": "func_checkout@example.com", "senha": "SenhaForte123!"}).json()
     headers_func = auth_headers(login["access_token"])
 
-    resp = client.post("/api/subscriptions/checkout", json={"plano": "basico"}, headers=headers_func)
+    resp = client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers_func)
     assert resp.status_code == 403
 
 
