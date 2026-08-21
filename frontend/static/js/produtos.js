@@ -87,7 +87,7 @@ async function carregarListasAuxiliares() {
       Api.localizacoes.list(),
     ]);
     popularFiltroCategorias();
-    popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
+    popularSelectComNovo(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria", "+ Nova categoria...");
     popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
     popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   } catch (err) {
@@ -128,7 +128,7 @@ document.getElementById("btn-novo-produto").addEventListener("click", () => {
   formProduto.reset();
   document.getElementById("produto-id").value = "";
   document.getElementById("produto-unidade").value = "UN";
-  popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
+  popularSelectComNovo(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria", "+ Nova categoria...");
   popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
   popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   document.getElementById("modal-produto-title").textContent = "Novo produto";
@@ -143,7 +143,7 @@ function preencherFormularioEdicao(produto) {
   document.getElementById("produto-preco-custo").value = produto.preco_custo;
   document.getElementById("produto-preco-venda").value = produto.preco_venda;
   document.getElementById("produto-estoque-minimo").value = produto.estoque_minimo;
-  popularSelect(document.getElementById("produto-categoria"), categoriasCache, produto.categoria_id, "Sem categoria");
+  popularSelectComNovo(document.getElementById("produto-categoria"), categoriasCache, produto.categoria_id, "Sem categoria", "+ Nova categoria...");
   popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, produto.fornecedor_id, "Sem fornecedor", "+ Novo fornecedor...");
   popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, produto.localizacao_id, "Sem localizacao", "+ Novo local...");
   document.getElementById("modal-produto-title").textContent = "Editar produto";
@@ -160,7 +160,7 @@ function abrirNovoProdutoComCodigo(codigo) {
   formProduto.reset();
   document.getElementById("produto-id").value = "";
   document.getElementById("produto-unidade").value = "UN";
-  popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
+  popularSelectComNovo(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria", "+ Nova categoria...");
   popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
   popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   document.getElementById("produto-codigo-barras").value = codigo;
@@ -323,6 +323,14 @@ document.getElementById("btn-scan-produto").addEventListener("click", () => {
   abrirScanner("fill");
 });
 
+ligarCriacaoRapida(document.getElementById("produto-categoria"), {
+  getCache: () => categoriasCache,
+  setCache: (novaLista) => { categoriasCache = novaLista; popularFiltroCategorias(); },
+  apiCriar: Api.categorias.create,
+  placeholder: "Sem categoria",
+  rotuloNovo: "+ Nova categoria...",
+  pergunta: "Nome da nova categoria:",
+});
 ligarCriacaoRapida(document.getElementById("produto-fornecedor"), {
   getCache: () => fornecedoresCache,
   setCache: (novaLista) => { fornecedoresCache = novaLista; },
