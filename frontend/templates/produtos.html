@@ -113,6 +113,25 @@
   </div>
 </div>
 
+<!-- Modal: Escanear codigo de barras -->
+<div class="modal fade" id="modal-scan" tabindex="-1" data-bs-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Escanear codigo de barras</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="scan-reader" class="vs-scan-reader"></div>
+        <p class="vs-muted small text-center mt-2 mb-0" id="scan-status">Aponte a camera para o codigo de barras.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Novo lote -->
 <div class="modal fade" id="modal-lote" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -154,6 +173,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="../static/js/config.js"></script>
 <script src="../static/js/api.js"></script>
 <script src="../static/js/icons.js"></script>

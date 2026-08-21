@@ -799,6 +799,23 @@ table.vs-table tr:last-child td { border-bottom: none; }
 }
 .vs-scan-btn:hover { background: var(--vs-primary-light); }
 
+.vs-scan-reader {
+  width: 100%;
+  min-height: 260px;
+  border-radius: var(--vs-radius);
+  overflow: hidden;
+  background: #0f172a;
+}
+.vs-scan-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: var(--vs-radius);
+}
+.vs-scan-reader img {
+  display: none; /* icone de erro de camera que a lib injeta; a mensagem de status ja cobre isso */
+}
+
 /* ---------- Modals ---------- */
 .modal-content {
   background: var(--vs-card);

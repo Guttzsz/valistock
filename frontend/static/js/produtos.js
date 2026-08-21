@@ -99,9 +99,7 @@ document.getElementById("btn-novo-produto").addEventListener("click", () => {
   document.getElementById("modal-produto-title").textContent = "Novo produto";
 });
 
-window.abrirEdicaoProduto = function (id) {
-  const produto = produtosCache.find((p) => p.id === id);
-  if (!produto) return;
+function preencherFormularioEdicao(produto) {
   document.getElementById("produto-id").value = produto.id;
   document.getElementById("produto-nome").value = produto.nome;
   document.getElementById("produto-codigo-barras").value = produto.codigo_barras || "";
@@ -115,7 +113,25 @@ window.abrirEdicaoProduto = function (id) {
   popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, produto.localizacao_id, "Sem localizacao");
   document.getElementById("modal-produto-title").textContent = "Editar produto";
   modalProduto.show();
+}
+
+window.abrirEdicaoProduto = function (id) {
+  const produto = produtosCache.find((p) => p.id === id);
+  if (!produto) return;
+  preencherFormularioEdicao(produto);
 };
+
+function abrirNovoProdutoComCodigo(codigo) {
+  formProduto.reset();
+  document.getElementById("produto-id").value = "";
+  document.getElementById("produto-unidade").value = "UN";
+  popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
+  popularSelect(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor");
+  popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao");
+  document.getElementById("produto-codigo-barras").value = codigo;
+  document.getElementById("modal-produto-title").textContent = "Novo produto";
+  modalProduto.show();
+}
 
 window.removerProduto = async function (id, nome) {
   if (!confirm(`Remover "${nome}"? Esta acao nao pode ser desfeita.`)) return;
@@ -189,12 +205,88 @@ formLote.addEventListener("submit", async (e) => {
   }
 });
 
-// ---------- Escanear codigo de barras (preparado para Fase 2) ----------
-function avisoScanIndisponivel() {
-  toast("Leitura por camera sera adicionada em uma proxima atualizacao. Digite o codigo manualmente por enquanto.", "info");
+// ---------- Escanear codigo de barras ----------
+const modalScan = new bootstrap.Modal(document.getElementById("modal-scan"));
+let scanner = null;
+let scanModo = "lookup"; // "lookup" (fab: busca/cadastra) ou "fill" (dentro do form: so preenche o campo)
+let scanEmAndamento = false;
+
+async function pararScanner() {
+  if (scanner) {
+    try {
+      await scanner.stop();
+      scanner.clear();
+    } catch (e) {
+      // camera ja parada / modal fechado antes da camera terminar de iniciar
+    }
+    scanner = null;
+  }
 }
-document.getElementById("btn-fab-scan").addEventListener("click", avisoScanIndisponivel);
-document.getElementById("btn-scan-produto").addEventListener("click", avisoScanIndisponivel);
+
+async function onCodigoEscaneado(codigoDecodificado) {
+  if (scanEmAndamento) return;
+  scanEmAndamento = true;
+  await pararScanner();
+  modalScan.hide();
+
+  if (scanModo === "fill") {
+    document.getElementById("produto-codigo-barras").value = codigoDecodificado;
+    toast("Codigo capturado.");
+    scanEmAndamento = false;
+    return;
+  }
+
+  try {
+    const produto = await Api.produtos.porCodigoBarras(codigoDecodificado);
+    if (produto) {
+      toast(`Produto encontrado: ${produto.nome}`);
+      preencherFormularioEdicao(produto);
+    } else {
+      toast("Codigo nao cadastrado ainda. Preencha os dados do produto.", "info");
+      abrirNovoProdutoComCodigo(codigoDecodificado);
+    }
+  } catch (err) {
+    toast(err.message || "Nao foi possivel buscar o produto.", "danger");
+  } finally {
+    scanEmAndamento = false;
+  }
+}
+
+async function abrirScanner(modo) {
+  if (typeof Html5Qrcode === "undefined") {
+    toast("Leitor de codigo de barras nao carregou. Verifique sua conexao e tente novamente.", "danger");
+    return;
+  }
+  scanModo = modo;
+  scanEmAndamento = false;
+  document.getElementById("scan-status").textContent = "Aponte a camera para o codigo de barras.";
+  modalScan.show();
+
+  scanner = new Html5Qrcode("scan-reader", { verbose: false });
+  try {
+    await scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 260, height: 140 } },
+      onCodigoEscaneado,
+      () => {} // callback de "nao achou nada neste frame", chamado o tempo todo enquanto escaneia - ignorar
+    );
+  } catch (err) {
+    document.getElementById("scan-status").textContent = "Nao foi possivel acessar a camera.";
+    toast("Nao foi possivel acessar a camera. Verifique se voce deu permissao ao navegador.", "danger");
+  }
+}
+
+document.getElementById("modal-scan").addEventListener("hidden.bs.modal", () => {
+  pararScanner();
+  // modo "fill": o form de produto ficou escondido enquanto a camera estava aberta (sucesso ou cancelamento) - reabre com o que ja tiver preenchido.
+  if (scanModo === "fill") modalProduto.show();
+});
+
+document.getElementById("btn-fab-scan").addEventListener("click", () => abrirScanner("lookup"));
+document.getElementById("btn-scan-produto").addEventListener("click", () => {
+  modalProduto.hide();
+  abrirScanner("fill");
+});
 
 (async function () {
   await carregarListasAuxiliares();
