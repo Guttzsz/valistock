@@ -37,6 +37,41 @@ function popularSelect(select, itens, valorAtual, placeholder) {
   select.value = atual || "";
 }
 
+/* Mesma coisa que popularSelect, mas com uma opcao extra no fim pra cadastrar um item novo
+   sem sair do formulario de produto (usado pelos selects de fornecedor e localizacao). */
+function popularSelectComNovo(select, itens, valorAtual, placeholder, rotuloNovo) {
+  popularSelect(select, itens, valorAtual, placeholder);
+  const opt = document.createElement("option");
+  opt.value = "__novo__";
+  opt.textContent = rotuloNovo;
+  select.appendChild(opt);
+}
+
+/* Liga um select a um fluxo de "cadastrar novo": ao escolher a opcao __novo__, pede o nome,
+   cria via API e ja deixa o item recem-criado selecionado.
+   getCache/setCache leem e gravam a variavel de cache correta (fornecedoresCache/localizacoesCache) -
+   nao da pra so guardar o array numa closure porque carregarListasAuxiliares() substitui esse array
+   inteiro (nao muta), entao uma referencia capturada de antemao ficaria presa na lista vazia inicial. */
+function ligarCriacaoRapida(select, { getCache, setCache, apiCriar, placeholder, rotuloNovo, pergunta }) {
+  select.addEventListener("change", async () => {
+    if (select.value !== "__novo__") return;
+    const nome = (prompt(pergunta) || "").trim();
+    if (!nome) {
+      select.value = "";
+      return;
+    }
+    try {
+      const novo = await apiCriar({ nome });
+      setCache([...getCache(), novo]);
+      popularSelectComNovo(select, getCache(), novo.id, placeholder, rotuloNovo);
+      toast(`"${novo.nome}" cadastrado.`);
+    } catch (err) {
+      select.value = "";
+      toast(err.message || "Nao foi possivel cadastrar.", "danger");
+    }
+  });
+}
+
 function popularFiltroCategorias() {
   const select = document.getElementById("filtro-categoria");
   const atual = select.value;
@@ -53,8 +88,8 @@ async function carregarListasAuxiliares() {
     ]);
     popularFiltroCategorias();
     popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
-    popularSelect(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor");
-    popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao");
+    popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
+    popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   } catch (err) {
     toast(err.message || "Erro ao carregar categorias/fornecedores.", "danger");
   }
@@ -94,8 +129,8 @@ document.getElementById("btn-novo-produto").addEventListener("click", () => {
   document.getElementById("produto-id").value = "";
   document.getElementById("produto-unidade").value = "UN";
   popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
-  popularSelect(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor");
-  popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao");
+  popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
+  popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   document.getElementById("modal-produto-title").textContent = "Novo produto";
 });
 
@@ -109,8 +144,8 @@ function preencherFormularioEdicao(produto) {
   document.getElementById("produto-preco-venda").value = produto.preco_venda;
   document.getElementById("produto-estoque-minimo").value = produto.estoque_minimo;
   popularSelect(document.getElementById("produto-categoria"), categoriasCache, produto.categoria_id, "Sem categoria");
-  popularSelect(document.getElementById("produto-fornecedor"), fornecedoresCache, produto.fornecedor_id, "Sem fornecedor");
-  popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, produto.localizacao_id, "Sem localizacao");
+  popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, produto.fornecedor_id, "Sem fornecedor", "+ Novo fornecedor...");
+  popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, produto.localizacao_id, "Sem localizacao", "+ Novo local...");
   document.getElementById("modal-produto-title").textContent = "Editar produto";
   modalProduto.show();
 }
@@ -126,8 +161,8 @@ function abrirNovoProdutoComCodigo(codigo) {
   document.getElementById("produto-id").value = "";
   document.getElementById("produto-unidade").value = "UN";
   popularSelect(document.getElementById("produto-categoria"), categoriasCache, "", "Sem categoria");
-  popularSelect(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor");
-  popularSelect(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao");
+  popularSelectComNovo(document.getElementById("produto-fornecedor"), fornecedoresCache, "", "Sem fornecedor", "+ Novo fornecedor...");
+  popularSelectComNovo(document.getElementById("produto-localizacao"), localizacoesCache, "", "Sem localizacao", "+ Novo local...");
   document.getElementById("produto-codigo-barras").value = codigo;
   document.getElementById("modal-produto-title").textContent = "Novo produto";
   modalProduto.show();
@@ -286,6 +321,23 @@ document.getElementById("btn-fab-scan").addEventListener("click", () => abrirSca
 document.getElementById("btn-scan-produto").addEventListener("click", () => {
   modalProduto.hide();
   abrirScanner("fill");
+});
+
+ligarCriacaoRapida(document.getElementById("produto-fornecedor"), {
+  getCache: () => fornecedoresCache,
+  setCache: (novaLista) => { fornecedoresCache = novaLista; },
+  apiCriar: Api.fornecedores.create,
+  placeholder: "Sem fornecedor",
+  rotuloNovo: "+ Novo fornecedor...",
+  pergunta: "Nome do novo fornecedor:",
+});
+ligarCriacaoRapida(document.getElementById("produto-localizacao"), {
+  getCache: () => localizacoesCache,
+  setCache: (novaLista) => { localizacoesCache = novaLista; },
+  apiCriar: Api.localizacoes.create,
+  placeholder: "Sem localizacao",
+  rotuloNovo: "+ Novo local...",
+  pergunta: "Nome do novo local (ex: Geladeira 2, Corredor 3):",
 });
 
 (async function () {
