@@ -1,5 +1,6 @@
 Auth.requireAuth();
 if (typeof VsApplyIcons === "function") VsApplyIcons();
+if (typeof VsApplyBrandMarks === "function") VsApplyBrandMarks();
 
 const CATEGORIAS_SUGERIDAS = ["Laticinios", "Bebidas", "Hortifruti", "Carnes", "Padaria", "Congelados", "Higiene", "Limpeza"];
 const TOTAL_ETAPAS = 9;

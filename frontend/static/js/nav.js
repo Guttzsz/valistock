@@ -85,7 +85,7 @@ function renderTopbar(activeKey) {
   el.innerHTML = `
     <div class="vs-topbar-left">
       <div class="vs-brand">
-        <div class="vs-brand-mark">VS</div>
+        <div class="vs-brand-mark">${VS_BRAND_MARK_SVG}</div>
         <div>
           <div>ValiStock</div>
           <div class="vs-slogan">Menos perdas. Mais lucro.</div>

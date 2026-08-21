@@ -1,6 +1,17 @@
 /* ValiStock - conjunto de icones SVG inline (estilo stroke, 24x24), sem dependencia externa.
    Uso: VsIcon("box") retorna uma string HTML de <svg>. Puramente apresentacional. */
 
+/* Marca do ValiStock: calendario + check. Sempre injetada dentro de .vs-brand-mark, que ja
+   fornece o fundo em gradiente (reage a cor de destaque escolhida pelo usuario). O check usa
+   var(--vs-primary-700) para acompanhar essa mesma cor automaticamente. */
+const VS_BRAND_MARK_SVG =
+  '<svg width="65%" height="65%" viewBox="0 0 100 100" aria-hidden="true">' +
+  '<rect x="34" y="18" width="7" height="16" rx="3.5" fill="white"/>' +
+  '<rect x="59" y="18" width="7" height="16" rx="3.5" fill="white"/>' +
+  '<rect x="22" y="30" width="56" height="48" rx="10" fill="white"/>' +
+  '<path d="M32 54 L44 66 L70 40" stroke="var(--vs-primary-700)" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+  '</svg>';
+
 const VS_ICON_PATHS = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/>',
   box: '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/>',
@@ -55,5 +66,14 @@ function VsApplyIcons(root) {
     const size = Number(el.getAttribute("data-vs-icon-size")) || 18;
     el.insertAdjacentHTML("afterbegin", VsIcon(el.getAttribute("data-vs-icon"), { size }));
     el.setAttribute("data-vs-icon-applied", "1");
+  });
+}
+
+/* Injeta a marca do ValiStock em todo .vs-brand-mark estatico (login/cadastro/onboarding).
+   O topbar (montado via JS em nav.js) ja recebe o SVG direto no template, sem precisar disso. */
+function VsApplyBrandMarks(root) {
+  (root || document).querySelectorAll(".vs-brand-mark:not([data-vs-brandmark-applied])").forEach((el) => {
+    el.innerHTML = VS_BRAND_MARK_SVG;
+    el.setAttribute("data-vs-brandmark-applied", "1");
   });
 }

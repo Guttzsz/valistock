@@ -12,7 +12,7 @@
 <div class="vs-auth-wrap">
   <div class="vs-auth-card" style="max-width:460px;">
     <div class="vs-auth-logo">
-      <div class="vs-brand-mark" style="width:52px;height:52px;font-size:1.2rem;">VS</div>
+      <div class="vs-brand-mark" style="width:52px;height:52px;font-size:1.2rem;"></div>
       <div>
         <div style="font-weight:800;font-size:1.3rem;">Crie sua conta</div>
         <div class="vs-muted" style="font-size:0.85rem;">Comece a controlar suas validades hoje</div>
@@ -59,6 +59,7 @@
 <script src="../static/js/icons.js"></script>
 <script>
   if (Auth.isAuthenticated()) window.location.href = "dashboard.html";
+  VsApplyBrandMarks();
 
   const form = document.getElementById("register-form");
   const alertBox = document.getElementById("vs-alert");

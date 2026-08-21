@@ -89,3 +89,11 @@ const VsTheme = {
 };
 
 VsTheme.init();
+
+(function vsInjetarFavicon() {
+  const link = document.createElement("link");
+  link.rel = "icon";
+  link.type = "image/png";
+  link.href = "/static/icons/favicon-32.png";
+  document.head.appendChild(link);
+})();
