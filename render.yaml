@@ -36,3 +36,9 @@ services:
         value: https://valistock.vercel.app/templates/planos.html?status=success
       - key: STRIPE_CANCEL_URL
         value: https://valistock.vercel.app/templates/planos.html?status=cancel
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_ADMIN_EMAIL
+        sync: false

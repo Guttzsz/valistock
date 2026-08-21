@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     stripe_success_url: str = "http://localhost:5500/templates/planos.html?status=success"
     stripe_cancel_url: str = "http://localhost:5500/templates/planos.html?status=cancel"
 
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_admin_email: str = ""
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

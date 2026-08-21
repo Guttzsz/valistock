@@ -140,9 +140,24 @@ function renderBottomNav(activeKey) {
   }
 }
 
+function _vsCarregarPush() {
+  if (document.getElementById("vs-manifest-link")) return;
+  const link = document.createElement("link");
+  link.id = "vs-manifest-link";
+  link.rel = "manifest";
+  link.href = "/manifest.json";
+  document.head.appendChild(link);
+
+  const script = document.createElement("script");
+  script.src = "/static/js/push.js";
+  script.onload = () => document.dispatchEvent(new Event("vs:push-ready"));
+  document.body.appendChild(script);
+}
+
 function initNav(activeKey) {
   Auth.requireAuth();
   renderTopbar(activeKey);
   renderBottomNav(activeKey);
   if (typeof VsApplyIcons === "function") VsApplyIcons();
+  _vsCarregarPush();
 }

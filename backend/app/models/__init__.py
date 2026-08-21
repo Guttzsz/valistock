@@ -13,6 +13,7 @@ from app.models.movimentacao_estoque import MovimentacaoEstoque, TipoMovimentaca
 from app.models.perda import MotivoPerda, Perda
 from app.models.preferencia import PreferenciaDashboard, PreferenciaNotificacao
 from app.models.produto import Produto
+from app.models.push_subscription import PushSubscription
 from app.models.reembolso import Reembolso
 from app.models.subscription import PlanoNome, StatusAssinatura, Subscription
 from app.models.usuario import PerfilUsuario, Usuario
@@ -41,6 +42,7 @@ __all__ = [
     "PreferenciaDashboard",
     "PreferenciaNotificacao",
     "Produto",
+    "PushSubscription",
     "Reembolso",
     "PlanoNome",
     "StatusAssinatura",

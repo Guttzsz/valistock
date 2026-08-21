@@ -236,6 +236,12 @@ const Api = {
     getDashboard: () => apiRequest("/api/preferencias/dashboard"),
     atualizarDashboard: (payload) => apiRequest("/api/preferencias/dashboard", { method: "PUT", body: payload }),
   },
+
+  push: {
+    chavePublica: () => apiRequest("/api/push/chave-publica"),
+    inscrever: (payload) => apiRequest("/api/push/inscrever", { method: "POST", body: payload }),
+    desinscrever: (payload) => apiRequest("/api/push/inscrever", { method: "DELETE", body: payload }),
+  },
 };
 
 function formatCurrency(value) {

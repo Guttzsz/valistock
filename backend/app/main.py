@@ -22,6 +22,7 @@ from app.routes import (
     perdas,
     preferencias,
     produtos,
+    push,
     relatorios,
     stripe_webhook,
     subscriptions,
@@ -83,6 +84,7 @@ app.include_router(localizacoes.router)
 app.include_router(campos_personalizados.router)
 app.include_router(historico.router)
 app.include_router(preferencias.router)
+app.include_router(push.router)
 app.include_router(financeiro.router)
 app.include_router(stripe_webhook.router)
 

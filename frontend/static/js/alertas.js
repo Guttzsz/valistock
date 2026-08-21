@@ -90,4 +90,32 @@ window.avisoPromocaoIndisponivel = function () {
   toast("Criacao de promocoes sera adicionada em uma proxima atualizacao.", "info");
 };
 
+async function atualizarBannerPush() {
+  if (typeof VsPush === "undefined" || !VsPush.suportado()) return;
+  const status = await VsPush.status();
+  document.getElementById("vs-push-banner").classList.toggle("d-none", status !== "inativo");
+}
+
+document.getElementById("btn-ativar-push").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  btn.classList.add("is-loading");
+  try {
+    await VsPush.ativar();
+    toast("Notificacoes ativadas neste aparelho.");
+    document.getElementById("vs-push-banner").classList.add("d-none");
+  } catch (err) {
+    toast(err.message || "Nao foi possivel ativar as notificacoes.", "danger");
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("is-loading");
+  }
+});
+
+if (typeof VsPush !== "undefined") {
+  atualizarBannerPush();
+} else {
+  document.addEventListener("vs:push-ready", atualizarBannerPush, { once: true });
+}
+
 carregarAlertas();

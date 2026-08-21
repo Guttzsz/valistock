@@ -6,6 +6,7 @@ from app.models.configuracao import Configuracao
 from app.models.empresa import Empresa
 from app.models.lote import Lote, StatusLote
 from app.models.produto import Produto
+from app.services.push_service import enviar_push_para_empresa
 from app.services.validade_service import dias_restantes
 from app.utils.timezone import today
 
@@ -47,6 +48,14 @@ def _mensagem(tipo: TipoAlerta, produto_nome: str, quantidade: int, dias: int) -
     return f"Estoque baixo: {produto_nome}."
 
 
+def _titulo_para_tipo(tipo: TipoAlerta) -> str:
+    if tipo == TipoAlerta.ESTOQUE_BAIXO:
+        return "Estoque baixo"
+    if tipo in (TipoAlerta.VENCIDO, TipoAlerta.VENCE_HOJE, TipoAlerta.VENCIMENTO_1_DIA):
+        return "Alerta urgente de validade"
+    return "Alerta de validade"
+
+
 def _criar_alerta_se_necessario(db: Session, empresa_id, produto: Produto, lote: Lote | None, tipo: TipoAlerta, mensagem: str) -> bool:
     filtros = [Alerta.empresa_id == empresa_id, Alerta.produto_id == produto.id, Alerta.tipo == tipo]
     if lote is not None:
@@ -69,6 +78,7 @@ def _criar_alerta_se_necessario(db: Session, empresa_id, produto: Produto, lote:
             data_alerta=today(),
         )
     )
+    enviar_push_para_empresa(db, empresa_id, _titulo_para_tipo(tipo), mensagem)
     return True
 
 
