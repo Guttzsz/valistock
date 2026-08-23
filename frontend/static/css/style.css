@@ -283,6 +283,91 @@ h1, h2, h3, h4, h5, h6 {
   padding: 1.25rem;
 }
 
+/* ---------- Card promocional (upgrade de plano no dashboard) ---------- */
+.vs-promo-card {
+  position: relative;
+  background: color-mix(in srgb, var(--vs-accent-hue) 6%, var(--vs-card));
+  border: 1px solid color-mix(in srgb, var(--vs-accent-hue) 22%, var(--vs-border));
+  border-radius: var(--vs-radius-lg);
+  box-shadow: var(--vs-shadow);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: vs-promo-in 0.28s ease forwards;
+}
+@keyframes vs-promo-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+.vs-promo-card.vs-promo-saindo {
+  animation: vs-promo-out 0.2s ease forwards;
+}
+@keyframes vs-promo-out {
+  to { opacity: 0; transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vs-promo-card { animation: none; opacity: 1; transform: none; }
+  .vs-promo-card.vs-promo-saindo { animation: none; opacity: 0; }
+}
+
+.vs-promo-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+.vs-promo-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--vs-dark);
+  margin-bottom: 0.2rem;
+}
+.vs-promo-desc {
+  font-size: 0.84rem;
+  color: var(--vs-slate);
+  margin: 0 0 0.3rem;
+  max-width: 46ch;
+}
+.vs-promo-hint {
+  font-size: 0.74rem;
+  color: var(--vs-accent-hue);
+  font-weight: 600;
+}
+.vs-promo-cta {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.vs-promo-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--vs-slate);
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.vs-promo-close:hover {
+  background: var(--vs-slate-50);
+  color: var(--vs-dark);
+}
+
+@media (max-width: 640px) {
+  .vs-promo-card { padding: 1rem 1.1rem; }
+  .vs-promo-body { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .vs-promo-desc { max-width: none; }
+  .vs-promo-cta { width: 100%; text-align: center; }
+  .vs-promo-close { top: 0.5rem; right: 0.5rem; }
+}
+
 .vs-kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));

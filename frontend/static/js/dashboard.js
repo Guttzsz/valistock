@@ -12,6 +12,28 @@ function statusBadge(status) {
   return `<span class="vs-badge ${status}">${STATUS_LABELS[status] || status}</span>`;
 }
 
+const VS_PROMO_DISMISS_KEY = "valistock_promo_planos_fechado";
+
+async function configurarPromoPlanos() {
+  const card = document.getElementById("vs-promo-planos");
+  if (localStorage.getItem(VS_PROMO_DISMISS_KEY) === "1") return;
+
+  try {
+    const sub = await Api.subscription.atual();
+    if (sub.plano !== "gratuito") return; // quem ja paga nao precisa ver incentivo pra assinar
+  } catch (err) {
+    return; // sem info de plano, nao mostra (evita incentivar quem ja pode ser assinante)
+  }
+
+  card.classList.remove("d-none");
+
+  document.getElementById("vs-promo-fechar").addEventListener("click", () => {
+    card.classList.add("vs-promo-saindo");
+    localStorage.setItem(VS_PROMO_DISMISS_KEY, "1");
+    card.addEventListener("animationend", () => card.classList.add("d-none"), { once: true });
+  });
+}
+
 async function loadDashboard() {
   const usuario = Auth.getUser();
   document.getElementById("vs-greeting").textContent = usuario ? `Ola, ${usuario.nome.split(" ")[0]}!` : "Ola!";
@@ -59,6 +81,8 @@ async function loadDashboard() {
 
     document.getElementById("vs-loading").classList.add("d-none");
     document.getElementById("vs-dashboard-content").classList.remove("d-none");
+
+    configurarPromoPlanos();
   } catch (err) {
     toast(err.message || "Erro ao carregar dashboard.", "danger");
   }
