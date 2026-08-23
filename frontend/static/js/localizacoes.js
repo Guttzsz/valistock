@@ -2,10 +2,19 @@ initNav("mais");
 
 let cache = [];
 
+function acoesLocalHtml(l) {
+  return `
+    <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${l.id}')">Editar</button>
+    <button class="btn btn-sm btn-outline-danger" onclick="desativar('${l.id}', '${l.nome.replace(/'/g, "\\'")}')">Desativar</button>
+  `;
+}
+
 function render(itens) {
   const el = document.getElementById("vs-lista");
+  const tbody = document.querySelector("#vs-localizacoes-table tbody");
   if (!itens.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("mapPin", { size: 24 })}</div>Nenhum local cadastrado.<br><span class="small">Ex: Corredor 1, Geladeira 2, Freezer, Estoque.</span></div>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 vs-muted">Nenhum local cadastrado.</td></tr>`;
     return;
   }
   el.innerHTML = itens.map((l) => `
@@ -16,11 +25,17 @@ function render(itens) {
           <div class="vs-list-card-meta">${l.tipo || ""}${l.descricao ? ` · ${l.descricao}` : ""}</div>
         </div>
       </div>
-      <div class="d-flex gap-2 mt-2">
-        <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${l.id}')">Editar</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="desativar('${l.id}', '${l.nome.replace(/'/g, "\\'")}')">Desativar</button>
-      </div>
+      <div class="d-flex gap-2 mt-2">${acoesLocalHtml(l)}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = itens.map((l) => `
+    <tr>
+      <td>${l.nome}</td>
+      <td>${l.tipo || "-"}</td>
+      <td>${l.descricao || "-"}</td>
+      <td><div class="d-flex gap-2 flex-wrap">${acoesLocalHtml(l)}</div></td>
+    </tr>
   `).join("");
 }
 

@@ -2,10 +2,19 @@ initNav("mais");
 
 let cache = [];
 
+function acoesCategoriaHtml(c) {
+  return `
+    <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${c.id}')">Editar</button>
+    <button class="btn btn-sm btn-outline-danger" onclick="desativar('${c.id}', '${c.nome.replace(/'/g, "\\'")}')">Desativar</button>
+  `;
+}
+
 function render(itens) {
   const el = document.getElementById("vs-lista");
+  const tbody = document.querySelector("#vs-categorias-table tbody");
   if (!itens.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("tag", { size: 24 })}</div>Nenhuma categoria cadastrada.<br><span class="small">Crie sua primeira categoria para organizar os produtos.</span></div>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 vs-muted">Nenhuma categoria cadastrada.</td></tr>`;
     return;
   }
   el.innerHTML = itens.map((c) => `
@@ -16,11 +25,17 @@ function render(itens) {
           <div class="vs-list-card-meta">${c.total_produtos} produto${c.total_produtos === 1 ? "" : "s"}${c.descricao ? ` · ${c.descricao}` : ""}</div>
         </div>
       </div>
-      <div class="d-flex gap-2 mt-2">
-        <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${c.id}')">Editar</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="desativar('${c.id}', '${c.nome.replace(/'/g, "\\'")}')">Desativar</button>
-      </div>
+      <div class="d-flex gap-2 mt-2">${acoesCategoriaHtml(c)}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = itens.map((c) => `
+    <tr>
+      <td>${c.nome}</td>
+      <td>${c.total_produtos}</td>
+      <td>${c.descricao || "-"}</td>
+      <td><div class="d-flex gap-2 flex-wrap">${acoesCategoriaHtml(c)}</div></td>
+    </tr>
   `).join("");
 }
 

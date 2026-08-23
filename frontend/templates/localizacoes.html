@@ -23,7 +23,23 @@
   <div id="vs-loading" class="text-center py-5">
     <div class="spinner-border text-success" role="status"></div>
   </div>
-  <div id="vs-lista" class="d-none"></div>
+  <!-- Mobile: cards -->
+  <div id="vs-lista" class="d-lg-none d-none"></div>
+
+  <!-- Desktop: table -->
+  <div class="vs-table-wrap d-none d-lg-block">
+    <table class="vs-table" id="vs-localizacoes-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Tipo</th>
+          <th>Descricao</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="vs-bottom-nav"></div>

@@ -30,7 +30,7 @@ function formatOrDados(value, formatter) {
 const CATEGORICAL_PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
 const SUCCESS_HUE = "#16a34a"; // receita: serie unica, semantica positiva (marca do ValiStock)
 
-Chart.defaults.font.family = "'Inter', 'Segoe UI', -apple-system, sans-serif";
+Chart.defaults.font.family = "'Plus Jakarta Sans', 'Segoe UI', -apple-system, sans-serif";
 
 async function carregarFinanceiro() {
   try {

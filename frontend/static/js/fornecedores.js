@@ -2,10 +2,19 @@ initNav("mais");
 
 let cache = [];
 
+function acoesFornecedorHtml(f) {
+  return `
+    <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${f.id}')">Editar</button>
+    <button class="btn btn-sm btn-outline-danger" onclick="desativar('${f.id}', '${f.nome.replace(/'/g, "\\'")}')">Desativar</button>
+  `;
+}
+
 function render(itens) {
   const el = document.getElementById("vs-lista");
+  const tbody = document.querySelector("#vs-fornecedores-table tbody");
   if (!itens.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("truck", { size: 24 })}</div>Nenhum fornecedor cadastrado.</div>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 vs-muted">Nenhum fornecedor cadastrado.</td></tr>`;
     return;
   }
   el.innerHTML = itens.map((f) => `
@@ -16,11 +25,18 @@ function render(itens) {
           <div class="vs-list-card-meta">${f.total_produtos} produto${f.total_produtos === 1 ? "" : "s"}${f.telefone ? ` · ${f.telefone}` : ""}${f.email ? ` · ${f.email}` : ""}</div>
         </div>
       </div>
-      <div class="d-flex gap-2 mt-2">
-        <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicao('${f.id}')">Editar</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="desativar('${f.id}', '${f.nome.replace(/'/g, "\\'")}')">Desativar</button>
-      </div>
+      <div class="d-flex gap-2 mt-2">${acoesFornecedorHtml(f)}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = itens.map((f) => `
+    <tr>
+      <td>${f.nome}</td>
+      <td>${f.total_produtos}</td>
+      <td>${f.telefone || "-"}</td>
+      <td>${f.email || "-"}</td>
+      <td><div class="d-flex gap-2 flex-wrap">${acoesFornecedorHtml(f)}</div></td>
+    </tr>
   `).join("");
 }
 

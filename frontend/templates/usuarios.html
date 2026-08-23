@@ -24,7 +24,25 @@
     <div class="spinner-border text-success" role="status"></div>
   </div>
 
-  <div id="vs-usuarios-list" class="d-none"></div>
+  <!-- Mobile: cards -->
+  <div id="vs-usuarios-list" class="d-lg-none d-none"></div>
+
+  <!-- Desktop: table -->
+  <div class="vs-table-wrap d-none d-lg-block">
+    <table class="vs-table" id="vs-usuarios-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Cargo</th>
+          <th>Perfil</th>
+          <th>Status</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="vs-bottom-nav"></div>

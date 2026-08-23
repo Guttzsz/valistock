@@ -24,8 +24,10 @@ function periodoParaDatas(valor) {
 
 function renderPerdas(perdas) {
   const el = document.getElementById("vs-perdas-list");
+  const tbody = document.querySelector("#vs-perdas-table tbody");
   if (!perdas.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("trendingDown", { size: 24 })}</div>Nenhuma perda registrada neste periodo.</div>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 vs-muted">Nenhuma perda registrada neste periodo.</td></tr>`;
     document.getElementById("total-periodo").textContent = formatCurrency(0);
     return;
   }
@@ -44,6 +46,18 @@ function renderPerdas(perdas) {
       </div>
       <div class="vs-list-card-meta">${p.quantidade} un. × ${formatCurrency(p.valor_unitario)}${p.observacao ? " · " + p.observacao : ""}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = perdas.map((p) => `
+    <tr>
+      <td>${p.produto_nome}</td>
+      <td>${MOTIVO_LABELS[p.motivo] || p.motivo}</td>
+      <td>${formatDate(p.data_perda)}</td>
+      <td>${p.usuario_nome || "-"}</td>
+      <td>${p.quantidade}</td>
+      <td>${formatCurrency(p.valor_unitario)}</td>
+      <td><span class="vs-badge vencido">${formatCurrency(p.valor_total)}</span></td>
+    </tr>
   `).join("");
 }
 

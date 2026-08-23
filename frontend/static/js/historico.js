@@ -7,8 +7,10 @@ function tempoRelativo(isoDatetime) {
 
 function render(logs) {
   const el = document.getElementById("vs-lista");
+  const tbody = document.querySelector("#vs-historico-table tbody");
   if (!logs.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("history", { size: 24 })}</div>Nenhuma acao registrada ainda.</div>`;
+    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 vs-muted">Nenhuma acao registrada ainda.</td></tr>`;
     return;
   }
   el.innerHTML = logs.map((log) => `
@@ -16,6 +18,14 @@ function render(logs) {
       <div class="vs-list-card-title" style="font-size:0.9rem;">${log.descricao}</div>
       <div class="vs-list-card-meta">${log.usuario_nome || "Sistema"} · ${tempoRelativo(log.criado_em)}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = logs.map((log) => `
+    <tr>
+      <td>${log.descricao}</td>
+      <td>${log.usuario_nome || "Sistema"}</td>
+      <td>${tempoRelativo(log.criado_em)}</td>
+    </tr>
   `).join("");
 }
 

@@ -7,7 +7,7 @@
    vez sem precisar editar cada HTML.
    ========================================================================= */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 
 /* ---------- Cor de destaque: cada [data-accent] so redefine esta 1 variavel; os 5
    tokens de marca derivados dela sao calculados abaixo (uma vez, para os 2 temas),
@@ -69,7 +69,7 @@
   --vs-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --vs-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.05);
   --vs-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.06);
-  --vs-font: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  --vs-font: "Plus Jakarta Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
 }
 
 /* ---------- Modo noite — redefine so o grupo neutro + status; a marca (acima) ja se

@@ -5,10 +5,20 @@ let categoriasCache = [];
 let fornecedoresCache = [];
 let localizacoesCache = [];
 
+function acoesProdutoHtml(p) {
+  return `
+    <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicaoProduto('${p.id}')">Editar</button>
+    <button class="btn btn-sm btn-vs-primary" onclick="abrirNovoLote('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">+ Lote</button>
+    <button class="btn btn-sm btn-outline-danger" onclick="removerProduto('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">Excluir</button>
+  `;
+}
+
 function renderProdutos(produtos) {
   const container = document.getElementById("vs-produtos-list");
+  const tbody = document.querySelector("#vs-produtos-table tbody");
   if (!produtos.length) {
     container.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("box", { size: 24 })}</div>Nenhum produto encontrado.<br><span class="small">Cadastre seu primeiro produto para comecar.</span></div>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 vs-muted">Nenhum produto encontrado.</td></tr>`;
     return;
   }
 
@@ -22,12 +32,22 @@ function renderProdutos(produtos) {
         <span class="vs-badge ${p.estoque_atual <= p.estoque_minimo ? "urgente" : "normal"}">${p.estoque_atual} ${p.unidade_medida}</span>
       </div>
       <div class="vs-list-card-meta mb-2">Custo ${formatCurrency(p.preco_custo)} · Venda ${formatCurrency(p.preco_venda)}${p.fornecedor_nome ? ` · ${p.fornecedor_nome}` : ""}</div>
-      <div class="d-flex gap-2 flex-wrap">
-        <button class="btn btn-sm btn-outline-secondary" onclick="abrirEdicaoProduto('${p.id}')">Editar</button>
-        <button class="btn btn-sm btn-vs-primary" onclick="abrirNovoLote('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">+ Lote</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="removerProduto('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">Excluir</button>
-      </div>
+      <div class="d-flex gap-2 flex-wrap">${acoesProdutoHtml(p)}</div>
     </div>
+  `).join("");
+
+  tbody.innerHTML = produtos.map((p) => `
+    <tr>
+      <td>${p.nome}</td>
+      <td>${p.codigo_barras || "-"}</td>
+      <td>${p.categoria_nome || "-"}</td>
+      <td>${p.localizacao_nome || "-"}</td>
+      <td><span class="vs-badge ${p.estoque_atual <= p.estoque_minimo ? "urgente" : "normal"}">${p.estoque_atual} ${p.unidade_medida}</span></td>
+      <td>${formatCurrency(p.preco_custo)}</td>
+      <td>${formatCurrency(p.preco_venda)}</td>
+      <td>${p.fornecedor_nome || "-"}</td>
+      <td><div class="d-flex gap-2 flex-wrap">${acoesProdutoHtml(p)}</div></td>
+    </tr>
   `).join("");
 }
 

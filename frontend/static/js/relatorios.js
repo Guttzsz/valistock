@@ -6,7 +6,7 @@ initNav("mais");
 const CATEGORICAL_PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"];
 const DANGER_HUE = "#dc2626"; // perdas: hue semantico unico (nao e identidade categorica, e uma unica serie negativa)
 
-Chart.defaults.font.family = "'Inter', 'Segoe UI', -apple-system, sans-serif";
+Chart.defaults.font.family = "'Plus Jakarta Sans', 'Segoe UI', -apple-system, sans-serif";
 
 /* Cor segue a entidade, nunca a posicao no ranking (anti-padrao "recolor-on-filter"):
    trocar o filtro de periodo pode reordenar categorias por valor, mas cada nome de

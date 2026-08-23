@@ -31,7 +31,28 @@
     <div class="spinner-border text-success" role="status"></div>
   </div>
 
-  <div id="vs-produtos-list" class="d-none"></div>
+  <!-- Mobile: cards -->
+  <div id="vs-produtos-list" class="d-lg-none d-none"></div>
+
+  <!-- Desktop: table -->
+  <div class="vs-table-wrap d-none d-lg-block">
+    <table class="vs-table" id="vs-produtos-table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Codigo</th>
+          <th>Categoria</th>
+          <th>Local</th>
+          <th>Estoque</th>
+          <th>Custo</th>
+          <th>Venda</th>
+          <th>Fornecedor</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <button class="vs-fab" id="btn-fab-scan" title="Escanear codigo de barras" data-vs-icon="camera" data-vs-icon-size="24"></button>

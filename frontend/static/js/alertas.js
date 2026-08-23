@@ -11,10 +11,21 @@ const TIPO_LABELS = {
 
 let filtroAtual = "nao-lidos";
 
+function acoesAlertaHtml(a) {
+  return `
+    ${!a.lido ? `<button class="btn btn-sm btn-outline-secondary" onclick="marcarLido('${a.id}')">Marcar como lido</button>` : ""}
+    <button class="btn btn-sm btn-outline-danger" onclick="ignorarAlerta('${a.id}')">Ignorar</button>
+    <a class="btn btn-sm btn-outline-secondary" href="perdas.html?produto_id=${a.produto_id}">Registrar perda</a>
+    <button class="btn btn-sm btn-outline-secondary" onclick="avisoPromocaoIndisponivel()">Criar promocao</button>
+  `;
+}
+
 function renderAlertas(alertas) {
   const el = document.getElementById("vs-alertas-list");
+  const tbody = document.querySelector("#vs-alertas-table tbody");
   if (!alertas.length) {
     el.innerHTML = `<div class="vs-empty"><div class="vs-empty-icon">${VsIcon("bell", { size: 24 })}</div>Nenhum alerta por aqui.</div>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 vs-muted">Nenhum alerta por aqui.</td></tr>`;
     return;
   }
   el.innerHTML = alertas.map((a) => {
@@ -28,13 +39,21 @@ function renderAlertas(alertas) {
           </div>
           <span class="vs-badge ${tipo.cls}">${tipo.label}</span>
         </div>
-        <div class="d-flex gap-2 flex-wrap mt-2">
-          ${!a.lido ? `<button class="btn btn-sm btn-outline-secondary" onclick="marcarLido('${a.id}')">Marcar como lido</button>` : ""}
-          <button class="btn btn-sm btn-outline-danger" onclick="ignorarAlerta('${a.id}')">Ignorar</button>
-          <a class="btn btn-sm btn-outline-secondary" href="perdas.html?produto_id=${a.produto_id}">Registrar perda</a>
-          <button class="btn btn-sm btn-outline-secondary" onclick="avisoPromocaoIndisponivel()">Criar promocao</button>
-        </div>
+        <div class="d-flex gap-2 flex-wrap mt-2">${acoesAlertaHtml(a)}</div>
       </div>
+    `;
+  }).join("");
+
+  tbody.innerHTML = alertas.map((a) => {
+    const tipo = TIPO_LABELS[a.tipo] || { label: a.tipo, cls: "neutro" };
+    return `
+      <tr class="${a.lido ? "opacity-75" : ""}">
+        <td>${a.mensagem}</td>
+        <td>${a.produto_nome}</td>
+        <td>${formatDate(a.data_alerta)}</td>
+        <td><span class="vs-badge ${tipo.cls}">${tipo.label}</span></td>
+        <td><div class="d-flex gap-2 flex-wrap">${acoesAlertaHtml(a)}</div></td>
+      </tr>
     `;
   }).join("");
 }
