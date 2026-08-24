@@ -15,8 +15,8 @@ const VsTheme = {
     const theme = localStorage.getItem(VS_THEME_KEY);
     const accent = localStorage.getItem(VS_ACCENT_KEY);
     return {
-      theme: VS_THEMES.includes(theme) ? theme : "automatico",
-      accent: VS_ACCENTS.includes(accent) ? accent : "azul",
+      theme: VS_THEMES.includes(theme) ? theme : "dia",
+      accent: VS_ACCENTS.includes(accent) ? accent : "verde",
     };
   },
 

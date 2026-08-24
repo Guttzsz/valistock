@@ -1,10 +1,10 @@
 from tests.conftest import auth_headers, registrar_empresa
 
 
-def test_novo_usuario_comeca_com_automatico_e_azul(client):
+def test_novo_usuario_comeca_com_dia_e_verde(client):
     data = registrar_empresa(client, "a")
-    assert data["usuario"]["theme"] == "automatico"
-    assert data["usuario"]["accent_color"] == "azul"
+    assert data["usuario"]["theme"] == "dia"
+    assert data["usuario"]["accent_color"] == "verde"
 
 
 def test_atualizar_aparencia_persiste(client):

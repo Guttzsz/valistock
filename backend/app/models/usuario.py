@@ -45,8 +45,8 @@ class Usuario(Base):
     perfil: Mapped[PerfilUsuario] = mapped_column(Enum(PerfilUsuario, name="perfil_usuario", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=PerfilUsuario.FUNCIONARIO, nullable=False)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     super_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    theme: Mapped[TemaUsuario] = mapped_column(Enum(TemaUsuario, name="tema_usuario", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=TemaUsuario.AUTOMATICO, nullable=False)
-    accent_color: Mapped[CorDestaque] = mapped_column(Enum(CorDestaque, name="cor_destaque", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=CorDestaque.AZUL, nullable=False)
+    theme: Mapped[TemaUsuario] = mapped_column(Enum(TemaUsuario, name="tema_usuario", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=TemaUsuario.DIA, nullable=False)
+    accent_color: Mapped[CorDestaque] = mapped_column(Enum(CorDestaque, name="cor_destaque", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=CorDestaque.VERDE, nullable=False)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     ultimo_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
