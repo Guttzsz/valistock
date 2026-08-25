@@ -602,6 +602,40 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.82rem;
 }
 
+.vs-password-wrap {
+  position: relative;
+}
+.vs-password-wrap .form-control {
+  padding-right: 2.6rem;
+}
+.vs-password-wrap .form-control::-ms-reveal,
+.vs-password-wrap .form-control::-ms-clear {
+  display: none;
+}
+.vs-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--vs-slate);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.vs-password-toggle:hover {
+  color: var(--vs-dark);
+}
+.vs-password-toggle:focus-visible {
+  outline: 2px solid var(--vs-primary-600);
+  outline-offset: -2px;
+  border-radius: var(--vs-radius-sm);
+}
+
 .form-text {
   font-size: 0.78rem;
   color: var(--vs-slate-light);

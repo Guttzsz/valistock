@@ -159,5 +159,6 @@ function initNav(activeKey) {
   renderTopbar(activeKey);
   renderBottomNav(activeKey);
   if (typeof VsApplyIcons === "function") VsApplyIcons();
+  if (typeof VsWirePasswordToggles === "function") VsWirePasswordToggles();
   _vsCarregarPush();
 }
