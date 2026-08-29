@@ -37,11 +37,14 @@
     <p>Voce pode consultar a politica de cookies e privacidade da Stripe diretamente em <a href="https://stripe.com/br/privacy" target="_blank" rel="noopener">stripe.com/br/privacy</a>.</p>
 
     <h2 class="h6 mt-4">4. Como gerenciar cookies e dados locais</h2>
-    <p>Como nao usamos cookies proprios, nao ha um banner ou configuracao de consentimento de cookies dentro do ValiStock. Ainda assim, voce pode a qualquer momento:</p>
+    <p>Na sua primeira visita, exibimos um aviso de cookies onde voce pode aceitar tudo, recusar o que for opcional ou escolher categoria por categoria (cookies necessarios, de preferencia, analiticos e de marketing). Sua escolha fica salva no seu navegador e nao voltamos a perguntar, a menos que voce limpe os dados do site.</p>
+    <p>Voce pode revisar ou alterar sua escolha a qualquer momento:</p>
     <ul>
-      <li>Apagar os dados de navegacao (incluindo cookies e local storage) diretamente nas configuracoes do seu navegador;</li>
-      <li>Bloquear cookies de terceiros nas configuracoes do navegador, o que pode impedir o funcionamento do checkout de pagamento da Stripe;</li>
-      <li>Encerrar sua sessao a qualquer momento pelo botao "Sair" dentro da plataforma, o que remove os dados salvos no local storage do navegador.</li>
+      <li>Pelo botao flutuante de cookies, disponivel em qualquer pagina apos a primeira escolha;</li>
+      <li><button type="button" class="btn btn-link p-0 align-baseline" id="btn-abrir-preferencias-cookies">Clicando aqui para abrir as preferencias de cookies</button> diretamente nesta pagina;</li>
+      <li>Apagando os dados de navegacao (incluindo cookies e local storage) diretamente nas configuracoes do seu navegador;</li>
+      <li>Bloqueando cookies de terceiros nas configuracoes do navegador, o que pode impedir o funcionamento do checkout de pagamento da Stripe;</li>
+      <li>Encerrando sua sessao a qualquer momento pelo botao "Sair" dentro da plataforma, o que remove os dados salvos no local storage do navegador.</li>
     </ul>
 
     <h2 class="h6 mt-4">5. Alteracoes a esta politica</h2>
@@ -59,8 +62,10 @@
 <script src="../static/js/config.js"></script>
 <script src="../static/js/api.js"></script>
 <script src="../static/js/icons.js"></script>
+<script src="../static/js/cookie-consent.js"></script>
 <script>
   VsApplyBrandMarks();
+  document.getElementById("btn-abrir-preferencias-cookies").addEventListener("click", () => CookieConsent.openSettings());
 </script>
 </body>
 </html>
