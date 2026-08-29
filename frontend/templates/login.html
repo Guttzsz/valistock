@@ -21,24 +21,40 @@
 
     <div id="vs-alert" class="alert alert-danger d-none" role="alert"></div>
 
-    <form id="login-form">
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Email</label>
-        <input type="email" class="form-control form-control-lg" id="email" required autocomplete="username">
-      </div>
-      <div class="mb-3">
-        <label class="form-label small fw-semibold">Senha</label>
-        <input type="password" class="form-control form-control-lg" id="senha" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="btn btn-vs-primary btn-lg w-100" id="submit-btn">Entrar</button>
-    </form>
+    <div id="login-step">
+      <form id="login-form">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Email</label>
+          <input type="email" class="form-control form-control-lg" id="email" required autocomplete="username">
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Senha</label>
+          <input type="password" class="form-control form-control-lg" id="senha" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-vs-primary btn-lg w-100" id="submit-btn">Entrar</button>
+      </form>
 
-    <p class="text-center small vs-muted mt-3 mb-0">
-      Ainda nao tem conta? <a href="register.html">Cadastre seu estabelecimento</a>
-    </p>
-    <p class="text-center small vs-muted mt-2 mb-0">
-      <a href="cookies.html">Politica de Cookies</a>
-    </p>
+      <p class="text-center small vs-muted mt-3 mb-0">
+        Ainda nao tem conta? <a href="register.html">Cadastre seu estabelecimento</a>
+      </p>
+      <p class="text-center small vs-muted mt-2 mb-0">
+        <a href="cookies.html">Politica de Cookies</a>
+      </p>
+    </div>
+
+    <div id="mfa-step" class="d-none">
+      <p class="small vs-muted mb-3">Digite o codigo de 6 digitos do seu aplicativo autenticador, ou um dos seus codigos de backup.</p>
+      <form id="mfa-form">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Codigo de verificacao</label>
+          <input type="text" class="form-control form-control-lg text-center" id="mfa-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="000000" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-vs-primary btn-lg w-100" id="mfa-submit-btn">Verificar</button>
+      </form>
+      <p class="text-center small mt-3 mb-0">
+        <button type="button" class="btn btn-link p-0 small" id="mfa-voltar">Voltar para o login</button>
+      </p>
+    </div>
   </div>
 </div>
 
@@ -52,9 +68,30 @@
   VsApplyBrandMarks();
   VsWirePasswordToggles();
 
+  const loginStep = document.getElementById("login-step");
+  const mfaStep = document.getElementById("mfa-step");
   const form = document.getElementById("login-form");
+  const mfaForm = document.getElementById("mfa-form");
   const alertBox = document.getElementById("vs-alert");
   const submitBtn = document.getElementById("submit-btn");
+  const mfaSubmitBtn = document.getElementById("mfa-submit-btn");
+  let challengeToken = null;
+
+  async function finalizarLogin(data) {
+    Auth.setSession(data.access_token, data.usuario);
+    VsTheme.sincronizarComUsuario(data.usuario);
+
+    let destino = "dashboard.html";
+    if (data.usuario.perfil === "administrador") {
+      try {
+        const config = await Api.configuracoes.get();
+        if (!config.onboarding_concluido) destino = "onboarding.html";
+      } catch (e) {
+        // se a checagem falhar, segue para o dashboard normalmente
+      }
+    }
+    window.location.href = destino;
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -67,19 +104,16 @@
         email: document.getElementById("email").value.trim(),
         senha: document.getElementById("senha").value,
       });
-      Auth.setSession(data.access_token, data.usuario);
-      VsTheme.sincronizarComUsuario(data.usuario);
 
-      let destino = "dashboard.html";
-      if (data.usuario.perfil === "administrador") {
-        try {
-          const config = await Api.configuracoes.get();
-          if (!config.onboarding_concluido) destino = "onboarding.html";
-        } catch (e) {
-          // se a checagem falhar, segue para o dashboard normalmente
-        }
+      if (data.mfa_required) {
+        challengeToken = data.challenge_token;
+        loginStep.classList.add("d-none");
+        mfaStep.classList.remove("d-none");
+        document.getElementById("mfa-codigo").focus();
+        return;
       }
-      window.location.href = destino;
+
+      await finalizarLogin(data);
     } catch (err) {
       alertBox.textContent = err.message || "Nao foi possivel entrar.";
       alertBox.classList.remove("d-none");
@@ -87,6 +121,35 @@
       submitBtn.disabled = false;
       submitBtn.classList.remove("is-loading");
     }
+  });
+
+  mfaForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    alertBox.classList.add("d-none");
+    mfaSubmitBtn.disabled = true;
+    mfaSubmitBtn.classList.add("is-loading");
+
+    try {
+      const data = await Api.mfa.verificarLogin({
+        challenge_token: challengeToken,
+        codigo: document.getElementById("mfa-codigo").value.trim(),
+      });
+      await finalizarLogin(data);
+    } catch (err) {
+      alertBox.textContent = err.message || "Codigo invalido.";
+      alertBox.classList.remove("d-none");
+    } finally {
+      mfaSubmitBtn.disabled = false;
+      mfaSubmitBtn.classList.remove("is-loading");
+    }
+  });
+
+  document.getElementById("mfa-voltar").addEventListener("click", () => {
+    challengeToken = null;
+    alertBox.classList.add("d-none");
+    mfaForm.reset();
+    mfaStep.classList.add("d-none");
+    loginStep.classList.remove("d-none");
   });
 </script>
 </body>

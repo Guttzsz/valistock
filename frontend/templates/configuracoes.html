@@ -195,6 +195,72 @@
       <button type="submit" class="btn btn-outline-secondary">Trocar senha</button>
     </form>
   </div>
+
+  <div class="vs-card mt-3">
+    <h2 class="h6 mb-1">Autenticacao em duas etapas</h2>
+    <p class="small vs-muted mb-3">Exige um codigo do seu aplicativo autenticador (Google Authenticator, Authy, 1Password...) alem da senha ao entrar.</p>
+
+    <div id="mfa-status-off">
+      <button type="button" class="btn btn-vs-primary" id="btn-mfa-ativar">Ativar autenticacao em duas etapas</button>
+    </div>
+
+    <div id="mfa-status-on" class="d-none d-flex align-items-center gap-2">
+      <span class="vs-badge normal">Ativada</span>
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-mfa-desativar">Desativar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-mfa-setup" tabindex="-1" aria-labelledby="modal-mfa-setup-titulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h6 mb-0" id="modal-mfa-setup-titulo">Ativar autenticacao em duas etapas</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="mfa-setup-passo-1">
+          <p class="small vs-muted">1. Escaneie o codigo abaixo com um aplicativo autenticador.</p>
+          <div class="text-center mb-3">
+            <img id="mfa-qr-code" alt="QR code para configurar a autenticacao em duas etapas" width="200" height="200">
+          </div>
+          <p class="small vs-muted mb-1">Ou digite manualmente esta chave:</p>
+          <p class="text-center"><code id="mfa-secret-manual"></code></p>
+          <hr>
+          <label class="form-label small fw-semibold">2. Codigo de 6 digitos gerado pelo aplicativo</label>
+          <input type="text" class="form-control text-center" id="mfa-codigo-confirmacao" inputmode="numeric" maxlength="6" placeholder="000000">
+        </div>
+        <div id="mfa-setup-passo-2" class="d-none">
+          <p class="small">Guarde estes codigos de backup em um lugar seguro. Cada um pode ser usado uma unica vez para entrar caso voce perca acesso ao aplicativo autenticador.</p>
+          <div class="vs-card" id="mfa-backup-codes-lista" style="font-family:monospace;font-size:0.95rem;line-height:1.8;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="mfa-setup-cancelar">Cancelar</button>
+        <button type="button" class="btn btn-vs-primary" id="mfa-setup-confirmar">Confirmar</button>
+        <button type="button" class="btn btn-vs-primary d-none" id="mfa-setup-concluir" data-bs-dismiss="modal">Ja guardei os codigos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-mfa-desativar" tabindex="-1" aria-labelledby="modal-mfa-desativar-titulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h6 mb-0" id="modal-mfa-desativar-titulo">Desativar autenticacao em duas etapas</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small vs-muted">Digite sua senha para confirmar.</p>
+        <input type="password" class="form-control" id="mfa-desativar-senha" autocomplete="current-password">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-outline-danger" id="mfa-desativar-confirmar">Desativar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="vs-bottom-nav"></div>

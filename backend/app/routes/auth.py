@@ -3,7 +3,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import CurrentUser, get_current_user
-from app.auth.jwt import create_access_token
+from app.auth.jwt import create_access_token, create_mfa_challenge_token, decode_mfa_challenge_token
+from app.auth.mfa import (
+    consumir_codigo_backup,
+    gerar_codigos_backup,
+    gerar_otpauth_url,
+    gerar_qr_code_base64,
+    gerar_segredo,
+    hash_codigos_backup,
+    verificar_codigo_totp,
+)
 from app.auth.permissions import permissoes_do_perfil
 from app.auth.security import hash_password, verify_password
 from app.database import get_db
@@ -14,6 +23,12 @@ from app.schemas.auth import (
     AtualizarAparenciaRequest,
     AtualizarPerfilRequest,
     LoginRequest,
+    LoginResponse,
+    MfaDisableRequest,
+    MfaEnableRequest,
+    MfaEnableResponse,
+    MfaSetupResponse,
+    MfaVerifyRequest,
     RegisterRequest,
     TokenResponse,
     TrocarSenhaRequest,
@@ -53,17 +68,93 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=token, usuario=UsuarioMe.model_validate(admin))
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     usuario = db.scalar(select(Usuario).where(Usuario.email == payload.email))
     if usuario is None or not usuario.ativo or not verify_password(payload.senha, usuario.senha_hash):
         raise UnauthorizedError("Email ou senha invalidos.")
+
+    if usuario.mfa_enabled:
+        challenge_token = create_mfa_challenge_token(usuario.id)
+        return LoginResponse(mfa_required=True, challenge_token=challenge_token)
+
+    usuario.ultimo_login = now()
+    db.commit()
+
+    token = create_access_token(usuario.id, usuario.empresa_id, usuario.perfil.value)
+    return LoginResponse(access_token=token, usuario=UsuarioMe.model_validate(usuario))
+
+
+@router.post("/mfa/verify", response_model=TokenResponse)
+def mfa_verify(payload: MfaVerifyRequest, db: Session = Depends(get_db)):
+    try:
+        usuario_id = decode_mfa_challenge_token(payload.challenge_token)
+    except ValueError as exc:
+        raise UnauthorizedError(str(exc)) from exc
+
+    usuario = db.get(Usuario, usuario_id)
+    if usuario is None or not usuario.ativo or not usuario.mfa_enabled:
+        raise UnauthorizedError("Sessao de verificacao invalida.")
+
+    codigo = payload.codigo.strip()
+    valido = verificar_codigo_totp(usuario.mfa_secret, codigo)
+
+    if not valido:
+        backup_atualizado = consumir_codigo_backup(usuario.mfa_backup_codes, codigo)
+        if backup_atualizado is None:
+            raise UnauthorizedError("Codigo de verificacao invalido.")
+        usuario.mfa_backup_codes = backup_atualizado
+        valido = True
 
     usuario.ultimo_login = now()
     db.commit()
 
     token = create_access_token(usuario.id, usuario.empresa_id, usuario.perfil.value)
     return TokenResponse(access_token=token, usuario=UsuarioMe.model_validate(usuario))
+
+
+@router.post("/mfa/setup", response_model=MfaSetupResponse)
+def mfa_setup(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    if usuario.mfa_enabled:
+        raise ConflictError("A autenticacao em duas etapas ja esta ativada.")
+
+    segredo = gerar_segredo()
+    usuario.mfa_secret = segredo
+    db.commit()
+
+    otpauth_url = gerar_otpauth_url(segredo, usuario.email)
+    return MfaSetupResponse(secret=segredo, otpauth_url=otpauth_url, qr_code_base64=gerar_qr_code_base64(otpauth_url))
+
+
+@router.post("/mfa/enable", response_model=MfaEnableResponse)
+def mfa_enable(payload: MfaEnableRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    if usuario.mfa_enabled:
+        raise ConflictError("A autenticacao em duas etapas ja esta ativada.")
+    if not usuario.mfa_secret:
+        raise ValidationErrorApp("Inicie a configuracao antes de confirmar o codigo.")
+    if not verificar_codigo_totp(usuario.mfa_secret, payload.codigo.strip()):
+        raise ValidationErrorApp("Codigo invalido. Verifique o aplicativo autenticador e tente novamente.")
+
+    codigos_backup = gerar_codigos_backup()
+    usuario.mfa_enabled = True
+    usuario.mfa_backup_codes = hash_codigos_backup(codigos_backup)
+    db.commit()
+    return MfaEnableResponse(backup_codes=codigos_backup)
+
+
+@router.post("/mfa/disable", status_code=204)
+def mfa_disable(payload: MfaDisableRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.get(Usuario, current_user.id)
+    if not verify_password(payload.senha, usuario.senha_hash):
+        raise ValidationErrorApp("Senha incorreta.")
+
+    usuario.mfa_enabled = False
+    usuario.mfa_secret = None
+    usuario.mfa_backup_codes = None
+    db.commit()
+    return None
 
 
 @router.post("/logout", status_code=204)

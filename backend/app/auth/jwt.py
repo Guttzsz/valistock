@@ -26,3 +26,22 @@ def decode_access_token(token: str) -> dict:
         return jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
     except JWTError as exc:
         raise ValueError("Token invalido ou expirado.") from exc
+
+
+def create_mfa_challenge_token(usuario_id: UUID) -> str:
+    """Token de curta duracao emitido apos validar email+senha quando o usuario tem MFA
+    ativado. So serve para trocar por um access_token real em /mfa/verify."""
+    expire = now() + timedelta(minutes=5)
+    payload = {"sub": str(usuario_id), "mfa_challenge": True, "exp": expire}
+    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+
+
+def decode_mfa_challenge_token(token: str) -> UUID:
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+    except JWTError as exc:
+        raise ValueError("Sessao de verificacao invalida ou expirada. Faca login novamente.") from exc
+
+    if not payload.get("mfa_challenge"):
+        raise ValueError("Token invalido.")
+    return UUID(payload["sub"])

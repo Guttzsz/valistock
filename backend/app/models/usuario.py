@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -49,5 +49,8 @@ class Usuario(Base):
     accent_color: Mapped[CorDestaque] = mapped_column(Enum(CorDestaque, name="cor_destaque", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=CorDestaque.VERDE, nullable=False)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     ultimo_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    mfa_secret: Mapped[str | None] = mapped_column(String(64))
+    mfa_backup_codes: Mapped[str | None] = mapped_column(Text)
 
     empresa = relationship("Empresa", back_populates="usuarios")

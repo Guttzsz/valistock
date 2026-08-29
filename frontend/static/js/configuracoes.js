@@ -77,6 +77,84 @@ function carregarPerfil() {
   document.getElementById("perfil-email").value = usuario.email;
 }
 
+function carregarMfa() {
+  const usuario = Auth.getUser();
+  const ativo = !!(usuario && usuario.mfa_enabled);
+  document.getElementById("mfa-status-off").classList.toggle("d-none", ativo);
+  document.getElementById("mfa-status-on").classList.toggle("d-none", !ativo);
+}
+
+function atualizarMfaNoUsuarioLocal(ativo) {
+  const usuario = Auth.getUser();
+  if (!usuario) return;
+  usuario.mfa_enabled = ativo;
+  Auth.setSession(Auth.getToken(), usuario);
+}
+
+let mfaSetupModal = null;
+let mfaDesativarModal = null;
+
+document.getElementById("btn-mfa-ativar").addEventListener("click", async () => {
+  try {
+    const dados = await Api.mfa.setup();
+    document.getElementById("mfa-qr-code").src = `data:image/png;base64,${dados.qr_code_base64}`;
+    document.getElementById("mfa-secret-manual").textContent = dados.secret;
+    document.getElementById("mfa-codigo-confirmacao").value = "";
+
+    document.getElementById("mfa-setup-passo-1").classList.remove("d-none");
+    document.getElementById("mfa-setup-passo-2").classList.add("d-none");
+    document.getElementById("mfa-setup-confirmar").classList.remove("d-none");
+    document.getElementById("mfa-setup-cancelar").classList.remove("d-none");
+    document.getElementById("mfa-setup-concluir").classList.add("d-none");
+
+    mfaSetupModal = mfaSetupModal || new bootstrap.Modal(document.getElementById("modal-mfa-setup"));
+    mfaSetupModal.show();
+  } catch (err) {
+    toast(err.message || "Nao foi possivel iniciar a configuracao.", "danger");
+  }
+});
+
+document.getElementById("mfa-setup-confirmar").addEventListener("click", async () => {
+  const codigo = document.getElementById("mfa-codigo-confirmacao").value.trim();
+  if (!codigo) return;
+
+  try {
+    const resultado = await Api.mfa.ativar(codigo);
+    document.getElementById("mfa-backup-codes-lista").innerHTML = resultado.backup_codes.map((c) => `<div>${c}</div>`).join("");
+
+    document.getElementById("mfa-setup-passo-1").classList.add("d-none");
+    document.getElementById("mfa-setup-passo-2").classList.remove("d-none");
+    document.getElementById("mfa-setup-confirmar").classList.add("d-none");
+    document.getElementById("mfa-setup-cancelar").classList.add("d-none");
+    document.getElementById("mfa-setup-concluir").classList.remove("d-none");
+
+    atualizarMfaNoUsuarioLocal(true);
+    carregarMfa();
+    toast("Autenticacao em duas etapas ativada.");
+  } catch (err) {
+    toast(err.message || "Codigo invalido.", "danger");
+  }
+});
+
+document.getElementById("btn-mfa-desativar").addEventListener("click", () => {
+  document.getElementById("mfa-desativar-senha").value = "";
+  mfaDesativarModal = mfaDesativarModal || new bootstrap.Modal(document.getElementById("modal-mfa-desativar"));
+  mfaDesativarModal.show();
+});
+
+document.getElementById("mfa-desativar-confirmar").addEventListener("click", async () => {
+  const senha = document.getElementById("mfa-desativar-senha").value;
+  try {
+    await Api.mfa.desativar(senha);
+    mfaDesativarModal.hide();
+    atualizarMfaNoUsuarioLocal(false);
+    carregarMfa();
+    toast("Autenticacao em duas etapas desativada.");
+  } catch (err) {
+    toast(err.message || "Nao foi possivel desativar.", "danger");
+  }
+});
+
 document.getElementById("form-config").addEventListener("submit", async (e) => {
   e.preventDefault();
   try {
@@ -170,3 +248,4 @@ carregarConfig();
 carregarEmpresa();
 carregarNotificacoes();
 carregarPerfil();
+carregarMfa();

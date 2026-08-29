@@ -104,6 +104,13 @@ const Api = {
   trocarSenha: (payload) => apiRequest("/api/auth/senha", { method: "PUT", body: payload }),
   atualizarAparencia: (payload) => apiRequest("/api/auth/aparencia", { method: "PUT", body: payload }),
 
+  mfa: {
+    verificarLogin: (payload) => apiRequest("/api/auth/mfa/verify", { method: "POST", body: payload, auth: false }),
+    setup: () => apiRequest("/api/auth/mfa/setup", { method: "POST" }),
+    ativar: (codigo) => apiRequest("/api/auth/mfa/enable", { method: "POST", body: { codigo } }),
+    desativar: (senha) => apiRequest("/api/auth/mfa/disable", { method: "POST", body: { senha } }),
+  },
+
   dashboard: () => apiRequest("/api/dashboard"),
 
   produtos: {
