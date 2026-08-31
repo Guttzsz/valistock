@@ -107,11 +107,39 @@ def criar_portal_session(db: Session, empresa: Empresa) -> str:
     if not sub.stripe_customer_id:
         raise ValidationErrorApp("Esta empresa ainda nao possui uma assinatura no Stripe.")
 
-    portal = stripe.billing_portal.Session.create(
-        customer=sub.stripe_customer_id,
-        return_url=f"{settings.frontend_url}/templates/planos.html",
-    )
+    try:
+        portal = stripe.billing_portal.Session.create(
+            customer=sub.stripe_customer_id,
+            return_url=f"{settings.frontend_url}/templates/planos.html",
+        )
+    except stripe.StripeError as exc:
+        raise ValidationErrorApp("Nao foi possivel abrir o portal de assinatura no momento. Tente novamente em instantes.") from exc
     return portal.url
+
+
+def _alterar_cancelamento(db: Session, empresa: Empresa, cancelar: bool) -> Subscription:
+    """Cancela (no fim do periodo pago) ou reativa a assinatura, direto no Stripe, sem
+    precisar redirecionar o usuario ao Portal do Cliente."""
+    sub = _get_or_create_local_subscription(db, empresa.id)
+    if not sub.stripe_subscription_id:
+        raise ValidationErrorApp("Esta empresa nao possui uma assinatura ativa no Stripe.")
+
+    try:
+        stripe_sub = stripe.Subscription.modify(sub.stripe_subscription_id, cancel_at_period_end=cancelar)
+    except stripe.StripeError as exc:
+        mensagem = "Nao foi possivel cancelar a assinatura no momento." if cancelar else "Nao foi possivel reativar a assinatura no momento."
+        raise ValidationErrorApp(f"{mensagem} Tente novamente em instantes.") from exc
+
+    atualizada = sincronizar_subscription(db, stripe_sub)
+    return atualizada or sub
+
+
+def cancelar_assinatura(db: Session, empresa: Empresa) -> Subscription:
+    return _alterar_cancelamento(db, empresa, cancelar=True)
+
+
+def reativar_assinatura(db: Session, empresa: Empresa) -> Subscription:
+    return _alterar_cancelamento(db, empresa, cancelar=False)
 
 
 def sincronizar_subscription(db: Session, stripe_sub: dict) -> Subscription | None:

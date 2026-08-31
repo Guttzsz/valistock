@@ -191,6 +191,8 @@ const Api = {
     faturas: () => apiRequest("/api/subscriptions/faturas"),
     checkout: (plano) => apiRequest("/api/subscriptions/checkout", { method: "POST", body: { plano } }),
     portal: () => apiRequest("/api/subscriptions/portal", { method: "POST" }),
+    cancelar: () => apiRequest("/api/subscriptions/cancelar", { method: "POST" }),
+    reativar: () => apiRequest("/api/subscriptions/reativar", { method: "POST" }),
   },
 
   financeiro: {

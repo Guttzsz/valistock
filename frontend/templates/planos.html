@@ -46,7 +46,11 @@
       </div>
     </div>
 
-    <button class="btn btn-sm btn-outline-secondary mt-3 d-none" id="btn-portal">Gerenciar assinatura (Stripe)</button>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <button class="btn btn-sm btn-outline-secondary d-none" id="btn-portal">Gerenciar assinatura (Stripe)</button>
+      <button class="btn btn-sm btn-outline-danger d-none" id="btn-cancelar-assinatura">Cancelar assinatura</button>
+      <button class="btn btn-sm btn-vs-primary d-none" id="btn-reativar-assinatura">Reativar assinatura</button>
+    </div>
   </div>
 
   <div class="row g-3 mb-4" id="planos-cards"></div>
@@ -71,6 +75,24 @@
         <thead><tr><th>Numero</th><th>Valor</th><th>Status</th><th>Data</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-cancelar-assinatura" tabindex="-1" aria-labelledby="modal-cancelar-assinatura-titulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h6 mb-0" id="modal-cancelar-assinatura-titulo">Cancelar assinatura</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small mb-0">Tem certeza que deseja cancelar? Voce continua com acesso ao plano atual ate <strong id="cancelar-assinatura-data">o fim do periodo ja pago</strong>; depois disso sua conta passa automaticamente para o plano Gratis.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Voltar</button>
+        <button type="button" class="btn btn-outline-danger" id="btn-confirmar-cancelamento">Sim, cancelar assinatura</button>
+      </div>
     </div>
   </div>
 </div>
@@ -194,6 +216,41 @@
   document.getElementById("btn-portal").addEventListener("click", abrirPortal);
   document.getElementById("btn-atualizar-pagamento").addEventListener("click", abrirPortal);
 
+  let assinaturaAtual = null;
+  let modalCancelarAssinatura = null;
+
+  window.abrirModalCancelamento = function () {
+    const dataEl = document.getElementById("cancelar-assinatura-data");
+    dataEl.textContent = assinaturaAtual && assinaturaAtual.periodo_atual_fim
+      ? formatDate(assinaturaAtual.periodo_atual_fim)
+      : "o fim do periodo ja pago";
+    modalCancelarAssinatura = modalCancelarAssinatura || new bootstrap.Modal(document.getElementById("modal-cancelar-assinatura"));
+    modalCancelarAssinatura.show();
+  };
+
+  document.getElementById("btn-cancelar-assinatura").addEventListener("click", abrirModalCancelamento);
+
+  document.getElementById("btn-confirmar-cancelamento").addEventListener("click", async () => {
+    try {
+      await Api.subscription.cancelar();
+      modalCancelarAssinatura.hide();
+      toast("Assinatura cancelada. Voce mantem acesso ate o fim do periodo pago.");
+      carregar();
+    } catch (err) {
+      toast(err.message || "Nao foi possivel cancelar a assinatura.", "danger");
+    }
+  });
+
+  document.getElementById("btn-reativar-assinatura").addEventListener("click", async () => {
+    try {
+      await Api.subscription.reativar();
+      toast("Assinatura reativada.");
+      carregar();
+    } catch (err) {
+      toast(err.message || "Nao foi possivel reativar a assinatura.", "danger");
+    }
+  });
+
   function renderCards(planoAtual) {
     const rankAtual = ORDEM_PLANOS.indexOf(planoAtual);
 
@@ -209,7 +266,7 @@
       } else if (rank > rankAtual) {
         botao = `<button class="btn btn-vs-primary" onclick="assinarPlano('${p.slug}')">Fazer upgrade</button>`;
       } else if (p.slug === "gratuito") {
-        botao = `<button class="btn btn-outline-secondary" onclick="abrirPortal()">Cancelar assinatura</button>`;
+        botao = `<button class="btn btn-outline-secondary" onclick="abrirModalCancelamento()">Cancelar assinatura</button>`;
       } else {
         botao = `<button class="btn btn-outline-secondary" onclick="assinarPlano('${p.slug}')">Fazer downgrade</button>`;
       }
@@ -242,6 +299,7 @@
   async function carregar() {
     try {
       const [sub, faturas] = await Promise.all([Api.subscription.atual(), Api.subscription.faturas()]);
+      assinaturaAtual = sub;
 
       document.getElementById("plano-atual").textContent = sub.plano;
       renderCards(sub.plano);
@@ -264,6 +322,10 @@
       if (sub.possui_stripe) {
         document.getElementById("btn-portal").classList.remove("d-none");
       }
+
+      const podeGerenciarAssinatura = sub.possui_stripe && sub.plano !== "gratuito";
+      document.getElementById("btn-reativar-assinatura").classList.toggle("d-none", !(podeGerenciarAssinatura && sub.cancelar_ao_fim_periodo));
+      document.getElementById("btn-cancelar-assinatura").classList.toggle("d-none", !(podeGerenciarAssinatura && !sub.cancelar_ao_fim_periodo));
 
       if (sub.status === "past_due" || sub.status === "unpaid") {
         document.getElementById("vs-alerta-pagamento").classList.remove("d-none");
