@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+import logging
+
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -34,14 +36,18 @@ from app.schemas.auth import (
     TrocarSenhaRequest,
     UsuarioMe,
 )
+from app.rate_limit import limiter
 from app.utils.exceptions import ConflictError, UnauthorizedError, ValidationErrorApp
 from app.utils.timezone import now
+
+logger = logging.getLogger("valistock")
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse, status_code=201)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
     existente = db.scalar(select(Usuario).where(Usuario.email == payload.admin_email))
     if existente is not None:
         raise ConflictError("Este email ja esta cadastrado.")
@@ -69,9 +75,11 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=LoginResponse)
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
     usuario = db.scalar(select(Usuario).where(Usuario.email == payload.email))
     if usuario is None or not usuario.ativo or not verify_password(payload.senha, usuario.senha_hash):
+        logger.warning("Tentativa de login invalida para %s", payload.email)
         raise UnauthorizedError("Email ou senha invalidos.")
 
     if usuario.mfa_enabled:
@@ -86,7 +94,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/mfa/verify", response_model=TokenResponse)
-def mfa_verify(payload: MfaVerifyRequest, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def mfa_verify(request: Request, payload: MfaVerifyRequest, db: Session = Depends(get_db)):
     try:
         usuario_id = decode_mfa_challenge_token(payload.challenge_token)
     except ValueError as exc:
@@ -102,6 +111,7 @@ def mfa_verify(payload: MfaVerifyRequest, db: Session = Depends(get_db)):
     if not valido:
         backup_atualizado = consumir_codigo_backup(usuario.mfa_backup_codes, codigo)
         if backup_atualizado is None:
+            logger.warning("Codigo MFA invalido para usuario %s", usuario_id)
             raise UnauthorizedError("Codigo de verificacao invalido.")
         usuario.mfa_backup_codes = backup_atualizado
         valido = True

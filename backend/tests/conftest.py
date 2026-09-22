@@ -1,5 +1,6 @@
 import os
 
+os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key"
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake_for_pytest"

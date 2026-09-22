@@ -4,8 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import get_settings
+from app.rate_limit import limiter
 from app.routes import (
     alertas,
     auth,
@@ -36,6 +40,9 @@ logger = logging.getLogger("valistock")
 
 settings = get_settings()
 
+if settings.is_production and settings.secret_key == "insecure-dev-key-change-me":
+    raise RuntimeError("SECRET_KEY nao foi configurada em producao. Defina a variavel de ambiente SECRET_KEY antes de subir o servico.")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,6 +58,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_url] if settings.is_production else ["*"],
@@ -58,6 +69,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if settings.is_production:
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+    return response
 
 
 @app.exception_handler(Exception)
