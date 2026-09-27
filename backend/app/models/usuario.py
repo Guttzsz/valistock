@@ -50,7 +50,7 @@ class Usuario(Base):
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     ultimo_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    mfa_secret: Mapped[str | None] = mapped_column(String(64))
+    mfa_secret: Mapped[str | None] = mapped_column(String(255))
     mfa_backup_codes: Mapped[str | None] = mapped_column(Text)
 
     empresa = relationship("Empresa", back_populates="usuarios")

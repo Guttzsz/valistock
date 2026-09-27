@@ -3,6 +3,7 @@ import os
 os.environ["APP_ENV"] = "test"
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["SECRET_KEY"] = "test-secret-key"
+os.environ["MFA_ENCRYPTION_KEY"] = "3iNZlyY4iCezOd3TZ4kuetmPlEI0-upgIUx27aXxtcI="
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake_for_pytest"
 os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_secret_for_pytest"
 os.environ["STRIPE_PRICE_ESSENCIAL"] = "price_test_essencial"

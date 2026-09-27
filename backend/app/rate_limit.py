@@ -12,4 +12,8 @@ settings = get_settings()
 # Desligado em teste (APP_ENV=test, ver tests/conftest.py): a suite roda dezenas de
 # logins/registros no mesmo IP em menos de um minuto, o que estouraria o limite e
 # quebraria testes sem relacao nenhuma com o throttling em si.
-limiter = Limiter(key_func=get_remote_address, enabled=settings.app_env != "test")
+limiter = Limiter(
+    key_func=get_remote_address,
+    enabled=settings.app_env != "test",
+    default_limits=["200/minute"],  # teto geral pra qualquer rota que nao tenha um limite proprio
+)

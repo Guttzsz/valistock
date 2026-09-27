@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth.crypto import decrypt_secret, encrypt_secret, is_encrypted
 from app.auth.dependencies import CurrentUser, get_current_user
 from app.auth.jwt import create_access_token, create_mfa_challenge_token, decode_mfa_challenge_token
 from app.auth.mfa import (
@@ -106,7 +107,11 @@ def mfa_verify(request: Request, payload: MfaVerifyRequest, db: Session = Depend
         raise UnauthorizedError("Sessao de verificacao invalida.")
 
     codigo = payload.codigo.strip()
-    valido = verificar_codigo_totp(usuario.mfa_secret, codigo)
+    segredo = decrypt_secret(usuario.mfa_secret)
+    valido = verificar_codigo_totp(segredo, codigo)
+
+    if not is_encrypted(usuario.mfa_secret):
+        usuario.mfa_secret = encrypt_secret(segredo)
 
     if not valido:
         backup_atualizado = consumir_codigo_backup(usuario.mfa_backup_codes, codigo)
@@ -130,7 +135,7 @@ def mfa_setup(current_user: CurrentUser = Depends(get_current_user), db: Session
         raise ConflictError("A autenticacao em duas etapas ja esta ativada.")
 
     segredo = gerar_segredo()
-    usuario.mfa_secret = segredo
+    usuario.mfa_secret = encrypt_secret(segredo)
     db.commit()
 
     otpauth_url = gerar_otpauth_url(segredo, usuario.email)
@@ -144,7 +149,7 @@ def mfa_enable(payload: MfaEnableRequest, current_user: CurrentUser = Depends(ge
         raise ConflictError("A autenticacao em duas etapas ja esta ativada.")
     if not usuario.mfa_secret:
         raise ValidationErrorApp("Inicie a configuracao antes de confirmar o codigo.")
-    if not verificar_codigo_totp(usuario.mfa_secret, payload.codigo.strip()):
+    if not verificar_codigo_totp(decrypt_secret(usuario.mfa_secret), payload.codigo.strip()):
         raise ValidationErrorApp("Codigo invalido. Verifique o aplicativo autenticador e tente novamente.")
 
     codigos_backup = gerar_codigos_backup()
@@ -155,7 +160,10 @@ def mfa_enable(payload: MfaEnableRequest, current_user: CurrentUser = Depends(ge
 
 
 @router.post("/mfa/disable", status_code=204)
-def mfa_disable(payload: MfaDisableRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def mfa_disable(
+    request: Request, payload: MfaDisableRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)
+):
     usuario = db.get(Usuario, current_user.id)
     if not verify_password(payload.senha, usuario.senha_hash):
         raise ValidationErrorApp("Senha incorreta.")
@@ -199,7 +207,10 @@ def atualizar_minha_aparencia(payload: AtualizarAparenciaRequest, current_user: 
 
 
 @router.put("/senha", status_code=204)
-def trocar_minha_senha(payload: TrocarSenhaRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def trocar_minha_senha(
+    request: Request, payload: TrocarSenhaRequest, current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)
+):
     usuario = db.get(Usuario, current_user.id)
     if not verify_password(payload.senha_atual, usuario.senha_hash):
         raise ValidationErrorApp("Senha atual incorreta.")

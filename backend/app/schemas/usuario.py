@@ -1,9 +1,10 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models.usuario import PerfilUsuario
+from app.schemas.validators import validar_senha_forte
 
 
 class UsuarioCreate(BaseModel):
@@ -12,6 +13,8 @@ class UsuarioCreate(BaseModel):
     senha: str = Field(min_length=8, max_length=100)
     cargo: str | None = None
     perfil: PerfilUsuario = PerfilUsuario.FUNCIONARIO
+
+    _validar_senha = field_validator("senha")(validar_senha_forte)
 
 
 class UsuarioUpdate(BaseModel):

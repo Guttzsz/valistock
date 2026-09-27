@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     secret_key: str = "insecure-dev-key-change-me"
     access_token_expire_minutes: int = 1440
+    mfa_encryption_key: str = ""
     timezone: str = "America/Sao_Paulo"
 
     database_url: str = "postgresql+psycopg2://valistock:valistock@localhost:5432/valistock"

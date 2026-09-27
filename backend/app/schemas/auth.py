@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models.usuario import CorDestaque, TemaUsuario
+from app.schemas.validators import validar_senha_forte
 
 
 class RegisterRequest(BaseModel):
@@ -11,6 +12,8 @@ class RegisterRequest(BaseModel):
     admin_nome: str = Field(min_length=2, max_length=150)
     admin_email: EmailStr
     admin_senha: str = Field(min_length=8, max_length=100)
+
+    _validar_senha = field_validator("admin_senha")(validar_senha_forte)
 
 
 class LoginRequest(BaseModel):
@@ -25,6 +28,8 @@ class AtualizarPerfilRequest(BaseModel):
 class TrocarSenhaRequest(BaseModel):
     senha_atual: str
     senha_nova: str = Field(min_length=8, max_length=100)
+
+    _validar_senha = field_validator("senha_nova")(validar_senha_forte)
 
 
 class AtualizarAparenciaRequest(BaseModel):

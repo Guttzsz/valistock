@@ -17,6 +17,7 @@ pywebpush>=2.0
 pyotp>=2.9
 qrcode[pil]>=7.4
 slowapi>=0.1.9
+cryptography>=42
 
 # tests
 pytest>=8.3
