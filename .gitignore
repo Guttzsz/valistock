@@ -34,3 +34,9 @@ Thumbs.db
 
 # Playwright CLI scratch state
 .playwright-cli/
+
+# Backups de banco gerados por backend/scripts/backup_db.py (dados reais, nunca versionar)
+backend/backup_*/
+
+# Videos de demonstracao gerados localmente (arquivos grandes, nao versionar)
+/videos/

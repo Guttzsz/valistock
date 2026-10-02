@@ -13,6 +13,7 @@ from app.models.subscription import StatusAssinatura, Subscription
 from app.models.usuario import Usuario
 from app.schemas.subscription import CheckoutRequest, CheckoutResponse, FaturaOut, PortalResponse, SubscriptionOut
 from app.services import stripe_service
+from app.services.auditoria_service import registrar_auditoria
 from app.services.plano_service import LIMITES, get_plano_atual
 from app.utils.exceptions import ValidationErrorApp
 
@@ -84,6 +85,11 @@ def criar_portal(current_user: CurrentUser = Depends(require_permissao(Permissao
 def cancelar_assinatura(current_user: CurrentUser = Depends(require_permissao(Permissao.ASSINATURA_GERENCIAR)), db: Session = Depends(get_db)):
     empresa = db.get(Empresa, current_user.empresa_id)
     stripe_service.cancelar_assinatura(db, empresa)
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "assinatura.cancelada", "assinatura", None, f"{current_user.nome} cancelou a assinatura (efetiva no fim do periodo ja pago).",
+    )
+    db.commit()
     return _montar_subscription_out(db, current_user.empresa_id)
 
 
@@ -91,4 +97,9 @@ def cancelar_assinatura(current_user: CurrentUser = Depends(require_permissao(Pe
 def reativar_assinatura(current_user: CurrentUser = Depends(require_permissao(Permissao.ASSINATURA_GERENCIAR)), db: Session = Depends(get_db)):
     empresa = db.get(Empresa, current_user.empresa_id)
     stripe_service.reativar_assinatura(db, empresa)
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "assinatura.reativada", "assinatura", None, f"{current_user.nome} reativou a assinatura.",
+    )
+    db.commit()
     return _montar_subscription_out(db, current_user.empresa_id)

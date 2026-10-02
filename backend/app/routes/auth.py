@@ -38,6 +38,7 @@ from app.schemas.auth import (
     UsuarioMe,
 )
 from app.rate_limit import limiter
+from app.services.auditoria_service import registrar_auditoria
 from app.utils.exceptions import ConflictError, UnauthorizedError, ValidationErrorApp
 from app.utils.timezone import now
 
@@ -81,6 +82,12 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
     usuario = db.scalar(select(Usuario).where(Usuario.email == payload.email))
     if usuario is None or not usuario.ativo or not verify_password(payload.senha, usuario.senha_hash):
         logger.warning("Tentativa de login invalida para %s", payload.email)
+        if usuario is not None:
+            registrar_auditoria(
+                db, usuario.empresa_id, usuario.id, usuario.nome,
+                "usuario.login_falhou", "seguranca", usuario.id, f"Tentativa de login falhou para {usuario.nome}.",
+            )
+            db.commit()
         raise UnauthorizedError("Email ou senha invalidos.")
 
     if usuario.mfa_enabled:
@@ -88,6 +95,10 @@ def login(request: Request, payload: LoginRequest, db: Session = Depends(get_db)
         return LoginResponse(mfa_required=True, challenge_token=challenge_token)
 
     usuario.ultimo_login = now()
+    registrar_auditoria(
+        db, usuario.empresa_id, usuario.id, usuario.nome,
+        "usuario.login", "seguranca", usuario.id, f"{usuario.nome} entrou no sistema.",
+    )
     db.commit()
 
     token = create_access_token(usuario.id, usuario.empresa_id, usuario.perfil.value)
@@ -117,11 +128,20 @@ def mfa_verify(request: Request, payload: MfaVerifyRequest, db: Session = Depend
         backup_atualizado = consumir_codigo_backup(usuario.mfa_backup_codes, codigo)
         if backup_atualizado is None:
             logger.warning("Codigo MFA invalido para usuario %s", usuario_id)
+            registrar_auditoria(
+                db, usuario.empresa_id, usuario.id, usuario.nome,
+                "usuario.mfa_verificacao_falhou", "seguranca", usuario.id, f"Codigo de verificacao invalido para {usuario.nome}.",
+            )
+            db.commit()
             raise UnauthorizedError("Codigo de verificacao invalido.")
         usuario.mfa_backup_codes = backup_atualizado
         valido = True
 
     usuario.ultimo_login = now()
+    registrar_auditoria(
+        db, usuario.empresa_id, usuario.id, usuario.nome,
+        "usuario.login", "seguranca", usuario.id, f"{usuario.nome} entrou no sistema (verificacao em duas etapas).",
+    )
     db.commit()
 
     token = create_access_token(usuario.id, usuario.empresa_id, usuario.perfil.value)
@@ -155,6 +175,10 @@ def mfa_enable(payload: MfaEnableRequest, current_user: CurrentUser = Depends(ge
     codigos_backup = gerar_codigos_backup()
     usuario.mfa_enabled = True
     usuario.mfa_backup_codes = hash_codigos_backup(codigos_backup)
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.mfa_ativado", "seguranca", usuario.id, f"{current_user.nome} ativou a autenticacao em duas etapas.",
+    )
     db.commit()
     return MfaEnableResponse(backup_codes=codigos_backup)
 
@@ -166,11 +190,21 @@ def mfa_disable(
 ):
     usuario = db.get(Usuario, current_user.id)
     if not verify_password(payload.senha, usuario.senha_hash):
+        registrar_auditoria(
+            db, current_user.empresa_id, current_user.id, current_user.nome,
+            "usuario.mfa_desativacao_falhou", "seguranca", usuario.id,
+            f"Tentativa de desativar a autenticacao em duas etapas com senha incorreta ({current_user.nome}).",
+        )
+        db.commit()
         raise ValidationErrorApp("Senha incorreta.")
 
     usuario.mfa_enabled = False
     usuario.mfa_secret = None
     usuario.mfa_backup_codes = None
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.mfa_desativado", "seguranca", usuario.id, f"{current_user.nome} desativou a autenticacao em duas etapas.",
+    )
     db.commit()
     return None
 
@@ -213,8 +247,18 @@ def trocar_minha_senha(
 ):
     usuario = db.get(Usuario, current_user.id)
     if not verify_password(payload.senha_atual, usuario.senha_hash):
+        registrar_auditoria(
+            db, current_user.empresa_id, current_user.id, current_user.nome,
+            "usuario.senha_alteracao_falhou", "seguranca", usuario.id,
+            f"Tentativa de trocar a senha com a senha atual incorreta ({current_user.nome}).",
+        )
+        db.commit()
         raise ValidationErrorApp("Senha atual incorreta.")
     usuario.senha_hash = hash_password(payload.senha_nova)
+    registrar_auditoria(
+        db, current_user.empresa_id, current_user.id, current_user.nome,
+        "usuario.senha_alterada", "seguranca", usuario.id, f"{current_user.nome} alterou a propria senha.",
+    )
     db.commit()
     return None
 
