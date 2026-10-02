@@ -51,6 +51,8 @@ const VS_ICON_PATHS = {
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   eyeOff: '<path d="M3 3l18 18"/><path d="M10.6 5.2A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a15.7 15.7 0 0 1-3.4 4.3M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   cookie: '<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/>',
+  mail: '<rect x="2.5" y="4.5" width="19" height="15" rx="2.2"/><path d="M3 6.2l9 6.1 9-6.1"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2.2"/><path d="M8 11V7.3a4 4 0 0 1 8 0V11"/>',
 };
 
 function VsIcon(name, opts) {

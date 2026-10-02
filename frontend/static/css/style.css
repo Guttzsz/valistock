@@ -965,6 +965,90 @@ table.vs-table tr:last-child td { border-bottom: none; }
   text-align: center;
 }
 
+/* Variantes usadas so na tela de login, para nao alterar o cadastro/onboarding que
+   compartilham .vs-auth-wrap/.vs-auth-card/.vs-brand-mark na forma original. */
+.vs-auth-wrap--ambient {
+  background-size: 140% 140%, 140% 140%, 100% 100%;
+  animation: vs-auth-drift 22s ease-in-out infinite alternate;
+}
+@keyframes vs-auth-drift {
+  from { background-position: 0% 0%, 0% 0%, 0% 0%; }
+  to { background-position: 6% 6%, -6% -6%, 0% 0%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vs-auth-wrap--ambient { animation: none; }
+}
+
+.vs-brand-mark--hero {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  font-size: 1.4rem;
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--vs-accent-hue) 45%, transparent),
+    0 0 0 8px color-mix(in srgb, var(--vs-accent-hue) 12%, transparent);
+}
+
+.vs-auth-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--vs-dark);
+  margin: 0;
+}
+
+.vs-auth-subtitle {
+  font-size: 0.88rem;
+  color: var(--vs-slate);
+  margin: 0.2rem 0 0;
+}
+
+.vs-input-icon {
+  position: relative;
+}
+.vs-input-icon .vs-input-icon-glyph {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--vs-slate-light);
+  display: flex;
+  pointer-events: none;
+}
+.vs-input-icon .form-control {
+  padding-left: 2.6rem;
+}
+
+.vs-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  color: var(--vs-slate-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.vs-auth-divider::before,
+.vs-auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--vs-border);
+}
+
+.vs-auth-footnote {
+  font-size: 0.72rem;
+  color: var(--vs-slate);
+  text-align: center;
+  margin: 1.25rem 0 0;
+}
+.vs-auth-footnote a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* ---------- Empty state ---------- */
 .vs-empty {
   text-align: center;

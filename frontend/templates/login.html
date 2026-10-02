@@ -9,13 +9,13 @@
 <script src="../static/js/theme.js"></script>
 </head>
 <body>
-<div class="vs-auth-wrap">
+<div class="vs-auth-wrap vs-auth-wrap--ambient">
   <div class="vs-auth-card">
     <div class="vs-auth-logo">
-      <div class="vs-brand-mark" style="width:52px;height:52px;font-size:1.2rem;"></div>
+      <div class="vs-brand-mark vs-brand-mark--hero"></div>
       <div>
-        <div style="font-weight:800;font-size:1.3rem;">ValiStock</div>
-        <div class="vs-muted" style="font-size:0.85rem;">Menos perdas. Mais lucro.</div>
+        <h1 class="vs-auth-title">ValiStock</h1>
+        <p class="vs-auth-subtitle">Menos perdas. Mais lucro.</p>
       </div>
     </div>
 
@@ -25,19 +25,26 @@
       <form id="login-form">
         <div class="mb-3">
           <label class="form-label small fw-semibold">Email</label>
-          <input type="email" class="form-control form-control-lg" id="email" required autocomplete="username">
+          <div class="vs-input-icon">
+            <span class="vs-input-icon-glyph" data-vs-icon="mail" data-vs-icon-size="16"></span>
+            <input type="email" class="form-control form-control-lg" id="email" required autocomplete="username">
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label small fw-semibold">Senha</label>
-          <input type="password" class="form-control form-control-lg" id="senha" required autocomplete="current-password">
+          <div class="vs-input-icon">
+            <span class="vs-input-icon-glyph" data-vs-icon="lock" data-vs-icon-size="16"></span>
+            <input type="password" class="form-control form-control-lg" id="senha" required autocomplete="current-password">
+          </div>
         </div>
         <button type="submit" class="btn btn-vs-primary btn-lg w-100" id="submit-btn">Entrar</button>
       </form>
 
-      <p class="text-center small vs-muted mt-3 mb-0">
-        Ainda nao tem conta? <a href="register.html">Cadastre seu estabelecimento</a>
-      </p>
-      <p class="text-center small vs-muted mt-2 mb-0">
+      <div class="vs-auth-divider">ou</div>
+
+      <a href="register.html" class="btn btn-outline-secondary btn-lg w-100">Cadastre seu estabelecimento</a>
+
+      <p class="vs-auth-footnote mb-0">
         <a href="cookies.html">Politica de Cookies</a>
       </p>
     </div>
@@ -66,6 +73,7 @@
 <script>
   if (Auth.isAuthenticated()) window.location.href = "dashboard.html";
   VsApplyBrandMarks();
+  VsApplyIcons();
   VsWirePasswordToggles();
 
   const loginStep = document.getElementById("login-step");
