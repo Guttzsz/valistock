@@ -1,6 +1,10 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Prefixos que provedores (Supabase, Render, Heroku) entregam na connection string; o driver instalado e o psycopg2.
+_PREFIXOS_POSTGRES = ("postgres://", "postgresql://", "postgresql+psycopg://")
 
 
 class Settings(BaseSettings):
@@ -13,6 +17,9 @@ class Settings(BaseSettings):
     timezone: str = "America/Sao_Paulo"
 
     database_url: str = "postgresql+psycopg2://valistock:valistock@localhost:5432/valistock"
+
+    # Hosts aceitos pelo TrustedHostMiddleware em producao, separados por virgula.
+    allowed_hosts: str = "valistock-backend.onrender.com"
 
     supabase_url: str = ""
     supabase_key: str = ""
@@ -33,6 +40,18 @@ class Settings(BaseSettings):
     vapid_public_key: str = ""
     vapid_private_key: str = ""
     vapid_admin_email: str = ""
+
+    @field_validator("database_url")
+    @classmethod
+    def usar_driver_psycopg2(cls, valor: str) -> str:
+        for prefixo in _PREFIXOS_POSTGRES:
+            if valor.startswith(prefixo):
+                return "postgresql+psycopg2://" + valor[len(prefixo):]
+        return valor
+
+    @property
+    def allowed_hosts_list(self) -> list[str]:
+        return [host.strip() for host in self.allowed_hosts.split(",") if host.strip()]
 
     @property
     def is_production(self) -> bool:

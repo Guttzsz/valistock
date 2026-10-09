@@ -70,7 +70,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["valistock-backend.onrender.com"] if settings.is_production else ["*"],
+    allowed_hosts=settings.allowed_hosts_list if settings.is_production else ["*"],
 )
 
 app.add_middleware(

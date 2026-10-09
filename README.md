@@ -93,6 +93,7 @@ valistock/
 │   ├── seed.py             # Popula o banco com a empresa de demonstracao
 │   ├── run.py               # Entry point local (uvicorn)
 │   ├── requirements.txt
+│   ├── requirements-dev.txt
 │   └── Dockerfile
 ├── frontend/
 │   ├── templates/          # Uma pagina HTML por tela (login, dashboard, produtos, ...)
@@ -128,7 +129,7 @@ cd backend
 python -m venv .venv
 .venv\Scripts\activate            # Windows
 # source .venv/bin/activate       # Linux/Mac
-pip install -r requirements.txt
+pip install -r requirements-dev.txt   # requirements.txt + dependencias de teste
 
 # Com Postgres rodando (veja "Rodando com Docker" abaixo) e DATABASE_URL configurada:
 alembic upgrade head
