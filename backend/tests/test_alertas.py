@@ -96,3 +96,25 @@ def test_nao_duplica_alertas_ao_rodar_verificacao_duas_vezes(client, db_session)
     resp = client.get("/api/alertas", headers=headers)
     tipos_vencido = [a for a in resp.json() if a["tipo"] == "vencido"]
     assert len(tipos_vencido) == 1
+
+
+def test_alerta_de_lote_criado_em_dia_anterior_nao_e_recriado(client, db_session):
+    from uuid import UUID
+
+    from app.models.alerta import Alerta
+
+    data = registrar_empresa(client, "a")
+    headers = auth_headers(data["access_token"])
+    _criar_produto_e_lote(client, headers, dias_validade=-3)
+    empresa_id = UUID(data["usuario"]["empresa_id"])
+
+    verificar_vencimentos_empresa(db_session, empresa_id)
+    # Simula a verificacao do dia seguinte: o alerta existente passa a ser "de ontem".
+    for alerta in db_session.query(Alerta).filter(Alerta.empresa_id == empresa_id).all():
+        alerta.data_alerta = today() - timedelta(days=1)
+    db_session.commit()
+
+    verificar_vencimentos_empresa(db_session, empresa_id)
+
+    resp = client.get("/api/alertas", headers=headers)
+    assert len([a for a in resp.json() if a["tipo"] == "vencido"]) == 1

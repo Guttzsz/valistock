@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -9,6 +11,8 @@ from app.models.produto import Produto
 from app.services.push_service import enviar_push_para_empresa
 from app.services.validade_service import dias_restantes
 from app.utils.timezone import today
+
+logger = logging.getLogger("valistock")
 
 
 def _get_or_create_configuracao(db: Session, empresa_id) -> Configuracao:
@@ -57,12 +61,20 @@ def _titulo_para_tipo(tipo: TipoAlerta) -> str:
 
 
 def _criar_alerta_se_necessario(db: Session, empresa_id, produto: Produto, lote: Lote | None, tipo: TipoAlerta, mensagem: str) -> bool:
-    filtros = [Alerta.empresa_id == empresa_id, Alerta.produto_id == produto.id, Alerta.tipo == tipo]
     if lote is not None:
-        filtros.append(Alerta.lote_id == lote.id)
+        # Mesma chave da constraint uq_alerta_lote_tipo: cada tipo de alerta sai uma unica vez por lote.
+        # Filtrar tambem pela data (como antes) fazia o alerta de ontem passar despercebido e o INSERT
+        # de hoje estourar a constraint, derrubando todos os alertas da empresa no dia.
+        filtros = [Alerta.empresa_id == empresa_id, Alerta.lote_id == lote.id, Alerta.tipo == tipo]
     else:
-        filtros.append(Alerta.lote_id.is_(None))
-    filtros.append(Alerta.data_alerta == today())
+        # Estoque baixo nao tem lote (a constraint nao se aplica): no maximo um alerta por produto por dia.
+        filtros = [
+            Alerta.empresa_id == empresa_id,
+            Alerta.produto_id == produto.id,
+            Alerta.lote_id.is_(None),
+            Alerta.tipo == tipo,
+            Alerta.data_alerta == today(),
+        ]
 
     existente = db.scalar(select(Alerta).where(*filtros))
     if existente is not None:
@@ -78,7 +90,6 @@ def _criar_alerta_se_necessario(db: Session, empresa_id, produto: Produto, lote:
             data_alerta=today(),
         )
     )
-    enviar_push_para_empresa(db, empresa_id, _titulo_para_tipo(tipo), mensagem)
     return True
 
 
@@ -92,7 +103,7 @@ def verificar_vencimentos_empresa(db: Session, empresa_id) -> int:
         )
     ).all()
 
-    alertas_criados = 0
+    novos: list[tuple[TipoAlerta, str]] = []
     for lote in lotes:
         dias = dias_restantes(lote.data_validade)
         produto = db.get(Produto, lote.produto_id)
@@ -110,20 +121,30 @@ def verificar_vencimentos_empresa(db: Session, empresa_id) -> int:
         if tipo is not None:
             mensagem = _mensagem(tipo, produto.nome, lote.quantidade, dias)
             if _criar_alerta_se_necessario(db, empresa_id, produto, lote, tipo, mensagem):
-                alertas_criados += 1
+                novos.append((tipo, mensagem))
 
     produtos = db.scalars(select(Produto).where(Produto.empresa_id == empresa_id, Produto.ativo.is_(True))).all()
     for produto in produtos:
         if produto.estoque_atual <= produto.estoque_minimo:
             mensagem = f"Estoque baixo: {produto.nome} possui {produto.estoque_atual} unidades (minimo {produto.estoque_minimo})."
             if _criar_alerta_se_necessario(db, empresa_id, produto, None, TipoAlerta.ESTOQUE_BAIXO, mensagem):
-                alertas_criados += 1
+                novos.append((TipoAlerta.ESTOQUE_BAIXO, mensagem))
 
     db.commit()
-    return alertas_criados
+
+    # Push so depois do commit: se a gravacao falhar, ninguem recebe notificacao de um alerta que nao existe
+    # (e cada reinicio da API nao reenvia as mesmas notificacoes).
+    for tipo, mensagem in novos:
+        enviar_push_para_empresa(db, empresa_id, _titulo_para_tipo(tipo), mensagem)
+    return len(novos)
 
 
 def verificar_vencimentos_todas_empresas(db: Session) -> None:
     empresa_ids = db.scalars(select(Empresa.id).where(Empresa.ativo.is_(True))).all()
     for empresa_id in empresa_ids:
-        verificar_vencimentos_empresa(db, empresa_id)
+        try:
+            verificar_vencimentos_empresa(db, empresa_id)
+        except Exception:
+            # Uma empresa com problema nao pode deixar as demais sem alertas.
+            db.rollback()
+            logger.exception("Falha ao verificar vencimentos da empresa %s.", empresa_id)
