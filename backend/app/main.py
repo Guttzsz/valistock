@@ -1,6 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
+import stripe
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -99,6 +100,17 @@ async def limitar_tamanho_do_corpo_middleware(request: Request, call_next):
     if content_length and content_length.isdigit() and int(content_length) > MAX_BODY_BYTES:
         return JSONResponse(status_code=413, content={"detail": "Corpo da requisicao muito grande."})
     return await call_next(request)
+
+
+@app.exception_handler(stripe.StripeError)
+async def stripe_error_handler(request: Request, exc: stripe.StripeError):
+    # Registrado por tipo (e nao so no handler generico de Exception) para a resposta passar pelo
+    # CORSMiddleware: sem os headers de CORS o navegador mostra so "nao foi possivel conectar".
+    logger.error("Erro do Stripe em %s %s: %s", request.method, request.url.path, exc.user_message or str(exc))
+    return JSONResponse(
+        status_code=502,
+        content={"detail": "O provedor de pagamentos recusou a operacao. Tente novamente em instantes ou fale com o suporte."},
+    )
 
 
 @app.exception_handler(Exception)

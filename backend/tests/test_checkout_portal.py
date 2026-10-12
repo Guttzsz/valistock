@@ -196,3 +196,18 @@ def test_funcionario_nao_pode_cancelar_assinatura(client, monkeypatch):
 
     resp = client.post("/api/subscriptions/cancelar", headers=headers_func)
     assert resp.status_code == 403
+
+
+def test_checkout_com_erro_do_stripe_responde_502_com_cors(client, monkeypatch):
+    data = registrar_empresa(client, "a")
+    headers = {**auth_headers(data["access_token"]), "Origin": "https://valistock.vercel.app"}
+
+    def _falhar(**kw):
+        raise stripe_service.stripe.InvalidRequestError("No such price: 'price_x'", "line_items")
+
+    monkeypatch.setattr(stripe_service.stripe.Customer, "create", lambda **kw: SimpleNamespace(id="cus_fake_789"))
+    monkeypatch.setattr(stripe_service.stripe.checkout.Session, "create", _falhar)
+
+    resp = client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers)
+    assert resp.status_code == 502
+    assert "access-control-allow-origin" in resp.headers
