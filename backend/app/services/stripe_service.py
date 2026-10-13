@@ -142,6 +142,19 @@ def reativar_assinatura(db: Session, empresa: Empresa) -> Subscription:
     return _alterar_cancelamento(db, empresa, cancelar=False)
 
 
+def sincronizar_assinatura_da_empresa(db: Session, empresa: Empresa) -> Subscription | None:
+    """Busca no Stripe a assinatura mais recente do customer da empresa e atualiza a copia local.
+    Chamado quando o usuario volta do checkout, para o plano nao depender so do webhook chegar."""
+    sub = db.scalar(select(Subscription).where(Subscription.empresa_id == empresa.id))
+    if sub is None or not sub.stripe_customer_id:
+        return sub
+
+    assinaturas = stripe.Subscription.list(customer=sub.stripe_customer_id, status="all", limit=1)
+    if not assinaturas.data:
+        return sub
+    return sincronizar_subscription(db, assinaturas.data[0].to_dict())
+
+
 def sincronizar_subscription(db: Session, stripe_sub: dict) -> Subscription | None:
     """Atualiza a copia local a partir de um objeto Subscription do Stripe (evento de webhook ou GET direto)."""
     empresa_id_str = (stripe_sub.get("metadata") or {}).get("empresa_id")

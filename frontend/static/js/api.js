@@ -193,6 +193,7 @@ const Api = {
     portal: () => apiRequest("/api/subscriptions/portal", { method: "POST" }),
     cancelar: () => apiRequest("/api/subscriptions/cancelar", { method: "POST" }),
     reativar: () => apiRequest("/api/subscriptions/reativar", { method: "POST" }),
+    sincronizar: () => apiRequest("/api/subscriptions/sincronizar", { method: "POST" }),
   },
 
   financeiro: {

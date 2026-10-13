@@ -348,10 +348,15 @@
   }
 
   renderComparativo();
-  carregar();
 
   const params = new URLSearchParams(window.location.search);
-  if (params.get("status") === "success") toast("Assinatura confirmada! Pode levar alguns segundos para atualizar.");
+  if (params.get("status") === "success") {
+    // Busca o plano direto no Stripe ao voltar do checkout, sem esperar o webhook chegar.
+    Api.subscription.sincronizar().catch(() => {}).finally(carregar);
+    toast("Assinatura confirmada! Pode levar alguns segundos para atualizar.");
+  } else {
+    carregar();
+  }
   if (params.get("status") === "cancel") toast("Checkout cancelado.", "info");
 </script>
 </body>

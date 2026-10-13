@@ -211,3 +211,52 @@ def test_checkout_com_erro_do_stripe_responde_502_com_cors(client, monkeypatch):
     resp = client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers)
     assert resp.status_code == 502
     assert "access-control-allow-origin" in resp.headers
+
+
+def test_sincronizar_busca_assinatura_do_customer_no_stripe(client, monkeypatch, db_session):
+    from app.config import get_settings
+    from app.models.subscription import Subscription
+
+    data = registrar_empresa(client, "a")
+    headers = auth_headers(data["access_token"])
+    empresa_id = data["usuario"]["empresa_id"]
+
+    monkeypatch.setattr(stripe_service.stripe.Customer, "create", lambda **kw: SimpleNamespace(id="cus_sync_1"))
+    monkeypatch.setattr(stripe_service.stripe.checkout.Session, "create", lambda **kw: SimpleNamespace(url="https://checkout.stripe.com/fake"))
+    client.post("/api/subscriptions/checkout", json={"plano": "essencial"}, headers=headers)
+
+    stripe_sub = {
+        "id": "sub_sync_1",
+        "customer": "cus_sync_1",
+        "status": "active",
+        "metadata": {"empresa_id": empresa_id},
+        "items": {"data": [{"price": {"id": get_settings().stripe_price_essencial, "unit_amount": 2990}}]},
+        "cancel_at_period_end": False,
+    }
+    chamadas = []
+
+    def _listar(**kw):
+        chamadas.append(kw)
+        return SimpleNamespace(data=[SimpleNamespace(to_dict=lambda: stripe_sub)])
+
+    monkeypatch.setattr(stripe_service.stripe.Subscription, "list", _listar)
+
+    resp = client.post("/api/subscriptions/sincronizar", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["plano"] == PlanoNome.ESSENCIAL.value
+    assert chamadas[0]["customer"] == "cus_sync_1"
+    db_session.expire_all()
+    assert db_session.query(Subscription).filter_by(stripe_customer_id="cus_sync_1").one().stripe_subscription_id == "sub_sync_1"
+
+
+def test_sincronizar_sem_customer_nao_chama_stripe(client, monkeypatch):
+    data = registrar_empresa(client, "a")
+    headers = auth_headers(data["access_token"])
+
+    def _nao_deveria_chamar(**kw):
+        raise AssertionError("nao deveria consultar o Stripe sem customer")
+
+    monkeypatch.setattr(stripe_service.stripe.Subscription, "list", _nao_deveria_chamar)
+    resp = client.post("/api/subscriptions/sincronizar", headers=headers)
+    assert resp.status_code == 200
+    assert resp.json()["plano"] == PlanoNome.GRATUITO.value

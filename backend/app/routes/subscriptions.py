@@ -81,6 +81,13 @@ def criar_portal(current_user: CurrentUser = Depends(require_permissao(Permissao
     return PortalResponse(url=url)
 
 
+@router.post("/sincronizar", response_model=SubscriptionOut)
+def sincronizar_assinatura(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    empresa = db.get(Empresa, current_user.empresa_id)
+    stripe_service.sincronizar_assinatura_da_empresa(db, empresa)
+    return _montar_subscription_out(db, current_user.empresa_id)
+
+
 @router.post("/cancelar", response_model=SubscriptionOut)
 def cancelar_assinatura(current_user: CurrentUser = Depends(require_permissao(Permissao.ASSINATURA_GERENCIAR)), db: Session = Depends(get_db)):
     empresa = db.get(Empresa, current_user.empresa_id)
