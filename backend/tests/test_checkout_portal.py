@@ -127,14 +127,18 @@ def test_cancelar_assinatura_marca_cancelamento_no_fim_do_periodo(client, monkey
     def _modify(subscription_id, **kw):
         assert subscription_id == "sub_existente"
         assert kw["cancel_at_period_end"] is True
-        return {
-            "id": "sub_existente",
-            "customer": "cus_existente",
-            "status": "active",
-            "cancel_at_period_end": True,
-            "metadata": {"empresa_id": empresa_id},
-            "items": {"data": []},
-        }
+        # O SDK real devolve um StripeObject (sem .get()), nao um dict: o teste precisa refletir isso.
+        return stripe_service.stripe.Subscription.construct_from(
+            {
+                "id": "sub_existente",
+                "customer": "cus_existente",
+                "status": "active",
+                "cancel_at_period_end": True,
+                "metadata": {"empresa_id": empresa_id},
+                "items": {"data": []},
+            },
+            "sk_test",
+        )
 
     monkeypatch.setattr(stripe_service.stripe.Subscription, "modify", _modify)
 
@@ -158,14 +162,18 @@ def test_reativar_assinatura_desfaz_cancelamento(client, monkeypatch, db_session
 
     def _modify(subscription_id, **kw):
         assert kw["cancel_at_period_end"] is False
-        return {
-            "id": "sub_existente",
-            "customer": "cus_existente",
-            "status": "active",
-            "cancel_at_period_end": False,
-            "metadata": {"empresa_id": empresa_id},
-            "items": {"data": []},
-        }
+        # O SDK real devolve um StripeObject (sem .get()), nao um dict: o teste precisa refletir isso.
+        return stripe_service.stripe.Subscription.construct_from(
+            {
+                "id": "sub_existente",
+                "customer": "cus_existente",
+                "status": "active",
+                "cancel_at_period_end": False,
+                "metadata": {"empresa_id": empresa_id},
+                "items": {"data": []},
+            },
+            "sk_test",
+        )
 
     monkeypatch.setattr(stripe_service.stripe.Subscription, "modify", _modify)
 

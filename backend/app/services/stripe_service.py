@@ -130,7 +130,8 @@ def _alterar_cancelamento(db: Session, empresa: Empresa, cancelar: bool) -> Subs
         mensagem = "Nao foi possivel cancelar a assinatura no momento." if cancelar else "Nao foi possivel reativar a assinatura no momento."
         raise ValidationErrorApp(f"{mensagem} Tente novamente em instantes.") from exc
 
-    atualizada = sincronizar_subscription(db, stripe_sub)
+    # StripeObject nao tem .get(); sincronizar_subscription trabalha com dict puro.
+    atualizada = sincronizar_subscription(db, stripe_sub.to_dict())
     return atualizada or sub
 
 
