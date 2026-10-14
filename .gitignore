@@ -40,3 +40,6 @@ backend/backup_*/
 
 # Videos de demonstracao gerados localmente (arquivos grandes, nao versionar)
 /videos/
+
+# Instalador do app de PC (gerado por electron-builder)
+desktop/dist/

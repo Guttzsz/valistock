@@ -1,0 +1,59 @@
+{
+  "name": "valistock-desktop",
+  "productName": "ValiStock",
+  "version": "1.0.0",
+  "description": "ValiStock para Windows - controle de validade, estoque e perdas.",
+  "author": "ValiStock <valistockcontact@gmail.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.valistock.app",
+    "productName": "ValiStock",
+    "copyright": "© 2026 ValiStock",
+    "files": [
+      "main.js",
+      "offline.html",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "ValiStock",
+      "uninstallDisplayName": "ValiStock",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerLanguages": [
+        "pt_BR"
+      ],
+      "language": "1046",
+      "runAfterFinish": true,
+      "artifactName": "ValiStock-Setup.exe"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.7.1",
+    "electron-builder": "^26.15.3"
+  }
+}

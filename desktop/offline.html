@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>ValiStock - sem conexao</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self'">
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: "Segoe UI", system-ui, sans-serif; background: #f4f6f9; color: #1f2937;
+    padding: 24px; box-sizing: border-box; text-align: center;
+  }
+  @media (prefers-color-scheme: dark) { body { background: #0f172a; color: #e5e7eb; } }
+  .card { max-width: 380px; }
+  img { width: 76px; height: 76px; }
+  h1 { font-size: 1.4rem; margin: 18px 0 8px; }
+  p { margin: 0 0 22px; opacity: 0.8; line-height: 1.5; }
+  button { background: #16a34a; color: #fff; border: 0; border-radius: 10px; padding: 12px 24px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="card">
+  <img src="build/icon.png" alt="ValiStock">
+  <h1>Voce esta sem internet</h1>
+  <p>O ValiStock precisa de conexao para mostrar seus produtos e validades. Assim que a internet voltar, clique em tentar novamente.</p>
+  <button type="button" onclick="location.href='https://valistock.vercel.app/templates/dashboard.html'">Tentar novamente</button>
+</div>
+</body>
+</html>
