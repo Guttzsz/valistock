@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instalar o app - ValiStock</title>
+<meta name="description" content="Instale o ValiStock no computador ou no celular e abra direto da tela inicial, como um app.">
+<link rel="manifest" href="/manifest.json" id="vs-manifest-link">
+<meta name="theme-color" content="#16a34a">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ValiStock">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script src="/static/js/pwa.js" defer></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="/static/css/style.css" rel="stylesheet">
+<script src="/static/js/theme.js"></script>
+</head>
+<body>
+<div class="vs-auth-wrap vs-auth-wrap--ambient">
+  <div class="vs-auth-card">
+    <div class="vs-auth-logo">
+      <img src="/static/icons/icon-192.png" alt="" width="56" height="56" class="vs-install-page-icon">
+      <div>
+        <h1 class="vs-auth-title">Instale o ValiStock</h1>
+        <p class="vs-auth-subtitle">Abra direto da tela inicial, em tela cheia, como um app.</p>
+      </div>
+    </div>
+
+    <!-- Chrome / Edge (PC e Android): prompt nativo -->
+    <button type="button" class="btn btn-vs-primary btn-lg w-100 d-none" id="btn-instalar" data-vs-install>Instalar o ValiStock</button>
+
+    <!-- iPhone / iPad / Safari do Mac: sem prompt nativo, passo a passo -->
+    <div id="passos-apple" class="d-none">
+      <ol class="vs-install-sheet-steps" id="passos-apple-lista"></ol>
+      <p class="vs-install-sheet-note" id="passos-apple-nota"></p>
+    </div>
+
+    <!-- Navegador sem prompt (ou app ja instalado nele): instrucoes manuais -->
+    <div id="passos-manual" class="d-none">
+      <p class="small mb-2">Se o botao de instalar nao apareceu:</p>
+      <ul class="vs-install-sheet-steps">
+        <li><strong>Chrome no computador:</strong> clique no icone de instalar na barra de endereco, ou no menu <strong>&#8942; &rarr; Transmitir, salvar e compartilhar &rarr; Instalar pagina como app</strong>.</li>
+        <li><strong>Edge:</strong> menu <strong>&hellip; &rarr; Aplicativos &rarr; Instalar este site como um aplicativo</strong>.</li>
+        <li><strong>Android:</strong> no Chrome, menu <strong>&#8942; &rarr; Instalar app</strong> (ou <strong>Adicionar a tela inicial</strong>).</li>
+        <li><strong>Outros navegadores:</strong> abra esta pagina no Chrome ou no Edge.</li>
+      </ul>
+      <p class="vs-install-sheet-note">Se voce ja instalou, abra o ValiStock pelo icone no computador ou na tela inicial do celular.</p>
+    </div>
+
+    <!-- Depois de instalar / aberto como app -->
+    <div id="instalado" class="d-none text-center">
+      <p class="fw-semibold mb-1">Pronto, o ValiStock esta instalado!</p>
+      <p class="small vs-muted mb-3">Procure o icone do ValiStock no computador ou na tela inicial do celular.</p>
+      <a href="/templates/dashboard.html" class="btn btn-vs-primary w-100">Abrir o ValiStock</a>
+    </div>
+
+    <div class="vs-auth-divider">ou use no navegador</div>
+    <div class="d-flex gap-2">
+      <a href="/templates/login.html" class="btn btn-outline-secondary flex-fill">Entrar</a>
+      <a href="/templates/register.html" class="btn btn-outline-secondary flex-fill">Criar conta gratis</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Roda depois do pwa.js (scripts "defer" executam antes do DOMContentLoaded).
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btn-instalar");
+    const manual = document.getElementById("passos-manual");
+    const instalado = document.getElementById("instalado");
+    const mostrar = (el, sim) => el.classList.toggle("d-none", !sim);
+
+    function marcarInstalado() {
+      btn.remove();
+      mostrar(manual, false);
+      mostrar(document.getElementById("passos-apple"), false);
+      mostrar(instalado, true);
+    }
+
+    if (VsInstall.instalado()) {
+      marcarInstalado();
+      return;
+    }
+
+    const plataforma = VsInstall.plataforma();
+    if (plataforma === "ios" || plataforma === "safari-mac") {
+      btn.remove(); // na Apple os passos ficam visiveis direto, sem janela extra
+      const passos = plataforma === "ios"
+        ? [
+            "Toque no botao <strong>Compartilhar</strong> do Safari (o quadrado com a seta para cima).",
+            "Role e toque em <strong>Adicionar a Tela de Inicio</strong>.",
+            "Toque em <strong>Adicionar</strong>. O ValiStock aparece na sua tela como um app.",
+          ]
+        : [
+            "No Safari, abra o menu <strong>Arquivo</strong> na barra do topo.",
+            "Clique em <strong>Adicionar ao Dock</strong>.",
+            "Confirme em <strong>Adicionar</strong>. O ValiStock aparece no Dock e no Launchpad.",
+          ];
+      document.getElementById("passos-apple-lista").innerHTML = passos.map((p) => `<li>${p}</li>`).join("");
+      document.getElementById("passos-apple-nota").innerHTML = plataforma === "ios"
+        ? "Use o <strong>Safari</strong>: em outros navegadores do iPhone a opcao pode nao aparecer."
+        : "";
+      mostrar(document.getElementById("passos-apple"), true);
+      return;
+    }
+
+    // Chrome/Edge liberam o prompt alguns instantes depois de carregar; se nao vier, mostra o manual.
+    const timer = setTimeout(() => { if (!VsInstall._prompt) mostrar(manual, true); }, 3000);
+    window.addEventListener("beforeinstallprompt", () => { clearTimeout(timer); mostrar(manual, false); });
+    window.addEventListener("appinstalled", marcarInstalado);
+  });
+</script>
+</body>
+</html>

@@ -1312,23 +1312,6 @@ table.vs-table tr:last-child td { border-bottom: none; }
 }
 
 /* ===== Instalar app (PWA) ===== */
-.vs-install-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 1px solid var(--vs-border-strong);
-  background: var(--vs-card);
-  color: inherit;
-  border-radius: 999px;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-right: 0.6rem;
-  cursor: pointer;
-}
-.vs-install-btn:hover { border-color: var(--vs-primary); color: var(--vs-primary-dark); }
-.vs-topbar-right { display: flex; align-items: center; }
-
 .vs-install-sheet {
   position: fixed;
   inset: 0;
@@ -1356,3 +1339,4 @@ table.vs-table tr:last-child td { border-bottom: none; }
 .vs-install-sheet-steps { padding-left: 1.2rem; margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.5; }
 .vs-install-sheet-steps li + li { margin-top: 0.45rem; }
 .vs-install-sheet-note { font-size: 0.78rem; color: var(--vs-slate); margin: 0 0 1rem; }
+.vs-install-page-icon { border-radius: 14px; flex-shrink: 0; }

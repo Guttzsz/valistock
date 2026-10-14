@@ -101,8 +101,6 @@ function renderTopbar(activeKey) {
         </div>
       </nav>
     </div>
-    <div class="vs-topbar-right">
-    <button type="button" class="vs-install-btn d-none" data-vs-install title="Instalar o ValiStock como app">${VsIcon("download", { size: 15 })}<span class="d-none d-sm-inline">Instalar app</span></button>
     <div class="dropdown">
       <button class="vs-avatar-btn" data-bs-toggle="dropdown" aria-expanded="false">
         ${(usuario?.nome || "?").charAt(0).toUpperCase()}
@@ -115,9 +113,7 @@ function renderTopbar(activeKey) {
         <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#" id="vs-logout-link">${VsIcon("logOut", { size: 16 })} Sair</a></li>
       </ul>
     </div>
-    </div>
   `;
-  if (typeof VsInstall !== "undefined") VsInstall.atualizarBotoes();
   document.getElementById("vs-logout-link")?.addEventListener("click", (e) => {
     e.preventDefault();
     Auth.logout();
