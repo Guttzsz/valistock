@@ -29,6 +29,17 @@
       </div>
     </div>
 
+    <!-- Windows: instalador .exe (app de PC com Electron) -->
+    <div id="windows" class="d-none">
+      <a href="https://github.com/Guttzsz/valistock/releases/latest/download/ValiStock-Setup.exe" class="btn btn-vs-primary btn-lg w-100" id="btn-windows">Baixar para Windows</a>
+      <p class="small vs-muted text-center mt-2 mb-3">Instalador .exe &middot; Windows 10 e 11 (64 bits) &middot; cerca de 110 MB</p>
+      <ol class="vs-install-sheet-steps">
+        <li>Abra o arquivo <strong>ValiStock-Setup.exe</strong> que foi baixado.</li>
+        <li>Se aparecer <strong>"O Windows protegeu o computador"</strong>, clique em <strong>Mais informacoes</strong> e depois em <strong>Executar assim mesmo</strong>.</li>
+        <li>Siga o instalador. No final, o ValiStock abre sozinho e ganha atalho na area de trabalho e no menu Iniciar.</li>
+      </ol>
+    </div>
+
     <!-- Chrome / Edge (PC e Android): prompt nativo -->
     <button type="button" class="btn btn-vs-primary btn-lg w-100 d-none" id="btn-instalar" data-vs-install>Instalar o ValiStock</button>
 
@@ -82,6 +93,12 @@
 
     if (VsInstall.instalado()) {
       marcarInstalado();
+      return;
+    }
+
+    if (/Windows/.test(navigator.userAgent)) {
+      btn.remove(); // no Windows o caminho e o instalador .exe, nao o atalho do navegador
+      mostrar(document.getElementById("windows"), true);
       return;
     }
 
