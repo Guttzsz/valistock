@@ -1,12 +1,51 @@
-/* ValiStock - service worker minimo, so para receber e mostrar notificacoes push.
-   Sem cache offline por enquanto (fica pra quando o app for instalavel de verdade). */
+/* ValiStock - service worker: deixa o app instalavel (PC e celular), mostra uma tela
+   offline quando nao ha internet e recebe as notificacoes push.
+   Estrategia "rede primeiro": com internet, tudo vem sempre atualizado do servidor; o cache
+   so e usado como reserva offline. A API (outro dominio) nunca passa pelo cache. */
 
-self.addEventListener("install", () => {
+const CACHE = "valistock-v1";
+const OFFLINE_URL = "/offline.html";
+const PRECACHE = [
+  OFFLINE_URL,
+  "/manifest.json",
+  "/static/css/style.css",
+  "/static/icons/icon-192.png",
+  "/static/icons/icon-512.png",
+];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys()
+      .then((nomes) => Promise.all(nomes.filter((n) => n !== CACHE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+
+  event.respondWith(
+    fetch(req)
+      .then((resp) => {
+        if (resp.ok) {
+          const copia = resp.clone();
+          caches.open(CACHE).then((cache) => cache.put(req, copia));
+        }
+        return resp;
+      })
+      .catch(async () => {
+        const emCache = await caches.match(req, { ignoreSearch: req.mode === "navigate" });
+        if (emCache) return emCache;
+        if (req.mode === "navigate") return caches.match(OFFLINE_URL);
+        return Response.error();
+      })
+  );
 });
 
 self.addEventListener("push", (event) => {

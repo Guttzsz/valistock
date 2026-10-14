@@ -1310,3 +1310,49 @@ table.vs-table tr:last-child td { border-bottom: none; }
   .vs-container { padding: 1rem 0.75rem; }
   .vs-page-header h1 { font-size: 1.3rem; }
 }
+
+/* ===== Instalar app (PWA) ===== */
+.vs-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--vs-border-strong);
+  background: var(--vs-card);
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 0.6rem;
+  cursor: pointer;
+}
+.vs-install-btn:hover { border-color: var(--vs-primary); color: var(--vs-primary-dark); }
+.vs-topbar-right { display: flex; align-items: center; }
+
+.vs-install-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+}
+@media (min-width: 576px) { .vs-install-sheet { align-items: center; } }
+.vs-install-sheet-card {
+  background: var(--vs-card);
+  border: 1px solid var(--vs-border);
+  border-radius: 18px;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+.vs-install-sheet-head { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 1rem; }
+.vs-install-sheet-head img { border-radius: 11px; flex-shrink: 0; }
+.vs-install-sheet-title { font-weight: 700; font-size: 1.05rem; }
+.vs-install-sheet-sub { font-size: 0.82rem; color: var(--vs-slate); }
+.vs-install-sheet-steps { padding-left: 1.2rem; margin: 0 0 1rem; font-size: 0.9rem; line-height: 1.5; }
+.vs-install-sheet-steps li + li { margin-top: 0.45rem; }
+.vs-install-sheet-note { font-size: 0.78rem; color: var(--vs-slate); margin: 0 0 1rem; }

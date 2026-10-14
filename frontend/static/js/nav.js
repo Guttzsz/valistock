@@ -101,6 +101,8 @@ function renderTopbar(activeKey) {
         </div>
       </nav>
     </div>
+    <div class="vs-topbar-right">
+    <button type="button" class="vs-install-btn d-none" data-vs-install title="Instalar o ValiStock como app">${VsIcon("download", { size: 15 })}<span class="d-none d-sm-inline">Instalar app</span></button>
     <div class="dropdown">
       <button class="vs-avatar-btn" data-bs-toggle="dropdown" aria-expanded="false">
         ${(usuario?.nome || "?").charAt(0).toUpperCase()}
@@ -113,7 +115,9 @@ function renderTopbar(activeKey) {
         <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="#" id="vs-logout-link">${VsIcon("logOut", { size: 16 })} Sair</a></li>
       </ul>
     </div>
+    </div>
   `;
+  if (typeof VsInstall !== "undefined") VsInstall.atualizarBotoes();
   document.getElementById("vs-logout-link")?.addEventListener("click", (e) => {
     e.preventDefault();
     Auth.logout();
@@ -141,14 +145,9 @@ function renderBottomNav(activeKey) {
 }
 
 function _vsCarregarPush() {
-  if (document.getElementById("vs-manifest-link")) return;
-  const link = document.createElement("link");
-  link.id = "vs-manifest-link";
-  link.rel = "manifest";
-  link.href = "/manifest.json";
-  document.head.appendChild(link);
-
+  if (document.getElementById("vs-push-script")) return;
   const script = document.createElement("script");
+  script.id = "vs-push-script";
   script.src = "/static/js/push.js";
   script.onload = () => document.dispatchEvent(new Event("vs:push-ready"));
   document.body.appendChild(script);
