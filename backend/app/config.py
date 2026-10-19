@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     stripe_success_url: str = "http://localhost:5500/templates/planos.html?status=success"
     stripe_cancel_url: str = "http://localhost:5500/templates/planos.html?status=cancel"
 
+    # E-mail transacional (recuperacao de senha) via Resend. Sem a chave, nenhum e-mail e enviado.
+    resend_api_key: str = ""
+    email_from: str = "ValiStock <onboarding@resend.dev>"
+
     vapid_public_key: str = ""
     vapid_private_key: str = ""
     vapid_admin_email: str = ""

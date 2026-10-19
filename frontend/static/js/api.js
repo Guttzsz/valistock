@@ -98,6 +98,8 @@ async function apiRequest(path, { method = "GET", body, params, auth = true } = 
 const Api = {
   register: (payload) => apiRequest("/api/auth/register", { method: "POST", body: payload, auth: false }),
   login: (payload) => apiRequest("/api/auth/login", { method: "POST", body: payload, auth: false }),
+  esqueciSenha: (email) => apiRequest("/api/auth/esqueci-senha", { method: "POST", body: { email }, auth: false }),
+  redefinirSenha: (token, senha_nova) => apiRequest("/api/auth/redefinir-senha", { method: "POST", body: { token, senha_nova }, auth: false }),
   me: () => apiRequest("/api/auth/me"),
   permissoes: () => apiRequest("/api/auth/permissoes"),
   atualizarPerfil: (payload) => apiRequest("/api/auth/perfil", { method: "PUT", body: payload }),

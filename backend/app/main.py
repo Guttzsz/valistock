@@ -61,6 +61,10 @@ app = FastAPI(
     description="API do ValiStock - controle de validade e perdas para pequenos comercios.",
     version="1.0.0",
     lifespan=lifespan,
+    # Em producao a documentacao interativa fica escondida: ela lista todas as rotas para qualquer pessoa.
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
 )
 
 MAX_BODY_BYTES = 2 * 1024 * 1024  # 2MB: nenhuma rota aceita upload de arquivo hoje, JSON nao precisa de mais que isso

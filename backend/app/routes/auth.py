@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -25,6 +25,7 @@ from app.models.usuario import PerfilUsuario, Usuario
 from app.schemas.auth import (
     AtualizarAparenciaRequest,
     AtualizarPerfilRequest,
+    EsqueciSenhaRequest,
     LoginRequest,
     LoginResponse,
     MfaDisableRequest,
@@ -32,12 +33,14 @@ from app.schemas.auth import (
     MfaEnableResponse,
     MfaSetupResponse,
     MfaVerifyRequest,
+    RedefinirSenhaRequest,
     RegisterRequest,
     TokenResponse,
     TrocarSenhaRequest,
     UsuarioMe,
 )
 from app.rate_limit import limiter
+from app.services import redefinicao_senha_service
 from app.services.auditoria_service import registrar_auditoria
 from app.utils.exceptions import ConflictError, UnauthorizedError, ValidationErrorApp
 from app.utils.timezone import now
@@ -259,6 +262,43 @@ def trocar_minha_senha(
     registrar_auditoria(
         db, current_user.empresa_id, current_user.id, current_user.nome,
         "usuario.senha_alterada", "seguranca", usuario.id, f"{current_user.nome} alterou a propria senha.",
+    )
+    db.commit()
+    return None
+
+
+@router.post("/esqueci-senha", status_code=202)
+@limiter.limit("5/minute")
+def esqueci_senha(request: Request, payload: EsqueciSenhaRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    """Envia o link de redefinicao por e-mail. A resposta e sempre a mesma, exista a conta ou nao, para
+    ninguem descobrir quais e-mails estao cadastrados; o envio roda depois da resposta para o tempo
+    de resposta tambem nao entregar essa informacao."""
+    usuario = db.scalar(select(Usuario).where(Usuario.email == payload.email))
+    if usuario is not None and usuario.ativo:
+        token = redefinicao_senha_service.criar_token(db, usuario)
+        registrar_auditoria(
+            db, usuario.empresa_id, usuario.id, usuario.nome,
+            "usuario.senha_recuperacao_solicitada", "seguranca", usuario.id,
+            f"Recuperacao de senha solicitada para {usuario.nome}.",
+        )
+        db.commit()
+        background_tasks.add_task(redefinicao_senha_service.enviar_link_de_redefinicao, usuario.email, usuario.nome, token)
+    return {"mensagem": "Se o e-mail estiver cadastrado, enviamos um link para criar uma nova senha."}
+
+
+@router.post("/redefinir-senha", status_code=204)
+@limiter.limit("10/minute")
+def redefinir_senha(request: Request, payload: RedefinirSenhaRequest, db: Session = Depends(get_db)):
+    registro = redefinicao_senha_service.buscar_valido(db, payload.token)
+    usuario = db.get(Usuario, registro.usuario_id) if registro is not None else None
+    if registro is None or usuario is None or not usuario.ativo:
+        raise ValidationErrorApp("Link invalido ou expirado. Peca um novo link de recuperacao.")
+
+    usuario.senha_hash = hash_password(payload.senha_nova)
+    redefinicao_senha_service.invalidar_todos(db, usuario.id)
+    registrar_auditoria(
+        db, usuario.empresa_id, usuario.id, usuario.nome,
+        "usuario.senha_redefinida", "seguranca", usuario.id, f"{usuario.nome} redefiniu a senha pelo link enviado por e-mail.",
     )
     db.commit()
     return None

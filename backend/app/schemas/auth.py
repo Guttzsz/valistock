@@ -40,6 +40,17 @@ class TrocarSenhaRequest(BaseModel):
     _validar_senha = field_validator("senha_nova")(validar_senha_forte)
 
 
+class EsqueciSenhaRequest(BaseModel):
+    email: EmailStr
+
+
+class RedefinirSenhaRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    senha_nova: str = Field(min_length=8, max_length=100)
+
+    _validar_senha = field_validator("senha_nova")(validar_senha_forte)
+
+
 class AtualizarAparenciaRequest(BaseModel):
     theme: TemaUsuario
     accent_color: CorDestaque
