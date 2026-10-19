@@ -49,6 +49,7 @@ class Usuario(Base):
     accent_color: Mapped[CorDestaque] = mapped_column(Enum(CorDestaque, name="cor_destaque", values_callable=lambda enum_cls: [e.value for e in enum_cls]), default=CorDestaque.VERDE, nullable=False)
     criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     ultimo_login: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    termos_aceitos_em: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # prova do aceite (LGPD); nulo em contas anteriores aos termos
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     mfa_secret: Mapped[str | None] = mapped_column(String(255))
     mfa_backup_codes: Mapped[str | None] = mapped_column(Text)

@@ -12,8 +12,16 @@ class RegisterRequest(BaseModel):
     admin_nome: str = Field(min_length=2, max_length=150)
     admin_email: EmailStr
     admin_senha: str = Field(min_length=8, max_length=100)
+    aceite_termos: bool
 
     _validar_senha = field_validator("admin_senha")(validar_senha_forte)
+
+    @field_validator("aceite_termos")
+    @classmethod
+    def _exigir_aceite(cls, valor: bool) -> bool:
+        if not valor:
+            raise ValueError("E necessario aceitar os Termos de Uso e a Politica de Privacidade.")
+        return valor
 
 
 class LoginRequest(BaseModel):

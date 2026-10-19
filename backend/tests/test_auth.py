@@ -17,9 +17,30 @@ def test_register_com_email_duplicado_falha(client):
             "admin_nome": "Outro Admin",
             "admin_email": "admina@example.com",
             "admin_senha": "SenhaForte123!",
+            "aceite_termos": True,
         },
     )
     assert resp.status_code == 409
+
+
+def test_register_sem_aceite_dos_termos_falha(client):
+    payload = {
+        "empresa_nome_fantasia": "Mercado Sem Aceite",
+        "empresa_email": "semaceite@example.com",
+        "admin_nome": "Admin",
+        "admin_email": "admin.semaceite@example.com",
+        "admin_senha": "SenhaForte123!",
+    }
+    assert client.post("/api/auth/register", json=payload).status_code == 422
+    assert client.post("/api/auth/register", json={**payload, "aceite_termos": False}).status_code == 422
+
+
+def test_register_registra_quando_os_termos_foram_aceitos(client, db_session):
+    from app.models.usuario import Usuario
+
+    registrar_empresa(client, "a")
+    usuario = db_session.query(Usuario).filter(Usuario.email == "admina@example.com").one()
+    assert usuario.termos_aceitos_em is not None
 
 
 def test_login_com_credenciais_corretas(client):

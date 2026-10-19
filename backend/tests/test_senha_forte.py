@@ -10,6 +10,7 @@ def _payload_registro(senha: str) -> dict:
         "admin_nome": "Admin Senha",
         "admin_email": "admin.senha@example.com",
         "admin_senha": senha,
+        "aceite_termos": True,
     }
 
 

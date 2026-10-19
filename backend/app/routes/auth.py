@@ -67,6 +67,7 @@ def register(request: Request, payload: RegisterRequest, db: Session = Depends(g
         senha_hash=hash_password(payload.admin_senha),
         perfil=PerfilUsuario.ADMINISTRADOR,
         ultimo_login=now(),
+        termos_aceitos_em=now(),
     )
     db.add(admin)
     db.commit()

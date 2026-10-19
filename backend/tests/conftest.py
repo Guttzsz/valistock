@@ -68,6 +68,7 @@ def registrar_empresa(client, sufixo="a"):
         "admin_nome": f"Admin {sufixo}",
         "admin_email": f"admin{sufixo}@example.com",
         "admin_senha": "SenhaForte123!",
+        "aceite_termos": True,
     }
     resp = client.post("/api/auth/register", json=payload)
     assert resp.status_code == 201, resp.text

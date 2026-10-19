@@ -52,6 +52,13 @@
         <input type="password" class="form-control" id="admin_senha" minlength="8" required autocomplete="new-password">
         <div class="form-text">Minimo de 8 caracteres.</div>
       </div>
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="aceite_termos" required>
+        <label class="form-check-label small" for="aceite_termos">
+          Li e aceito os <a href="termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a
+          <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.
+        </label>
+      </div>
       <button type="submit" class="btn btn-vs-primary btn-lg w-100" id="submit-btn">Criar conta</button>
     </form>
 
@@ -59,6 +66,8 @@
       Ja tem conta? <a href="login.html">Entrar</a>
     </p>
     <p class="text-center small vs-muted mt-2 mb-0">
+      <a href="termos.html">Termos de Uso</a> &middot;
+      <a href="privacidade.html">Política de Privacidade</a> &middot;
       <a href="cookies.html">Politica de Cookies</a>
     </p>
   </div>
@@ -91,6 +100,7 @@
         admin_nome: document.getElementById("admin_nome").value.trim(),
         admin_email: document.getElementById("admin_email").value.trim(),
         admin_senha: document.getElementById("admin_senha").value,
+        aceite_termos: document.getElementById("aceite_termos").checked,
       });
       Auth.setSession(data.access_token, data.usuario);
       VsTheme.sincronizarComUsuario(data.usuario);
