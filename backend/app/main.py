@@ -80,7 +80,7 @@ app.add_middleware(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url] if settings.is_production else ["*"],
+    allow_origins=settings.cors_origins_list if settings.is_production else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

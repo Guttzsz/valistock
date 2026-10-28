@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
 
     frontend_url: str = "http://localhost:5500"
+    # Outros enderecos do app aceitos no CORS (separados por virgula), alem de FRONTEND_URL.
+    allowed_origins: str = "https://valistock.com.br,https://www.valistock.com.br"
     backend_url: str = "http://localhost:8000"
 
     stripe_secret_key: str = ""
@@ -52,6 +54,12 @@ class Settings(BaseSettings):
             if valor.startswith(prefixo):
                 return "postgresql+psycopg2://" + valor[len(prefixo):]
         return valor
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """FRONTEND_URL (pode ter varios enderecos separados por virgula) mais ALLOWED_ORIGINS, sem repeticao."""
+        itens = [o.strip().rstrip("/") for o in f"{self.frontend_url},{self.allowed_origins}".split(",") if o.strip()]
+        return list(dict.fromkeys(itens))
 
     @property
     def allowed_hosts_list(self) -> list[str]:
