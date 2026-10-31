@@ -1,21 +1,500 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ValiStock</title>
-<link rel="manifest" href="/manifest.json" id="vs-manifest-link">
-<meta name="theme-color" content="#16a34a">
-<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="ValiStock">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<script src="/static/js/pwa.js" defer></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>
-  const hasToken = !!localStorage.getItem("valistock_token");
-  window.location.href = hasToken ? "templates/dashboard.html" : "templates/login.html";
+  try { if (localStorage.getItem("valistock_token")) window.location.replace("/templates/dashboard.html"); } catch (e) {}
 </script>
+<meta name="description" content="ValiStock: controle de validade e perdas para mercados, padarias e pequenos estabelecimentos alimentícios. Menos perdas. Mais lucro." />
+<title>ValiStock — Menos perdas. Mais lucro.</title>
+<link rel="icon" type="image/svg+xml" href="/static/landing/favicon.svg" />
+<link rel="stylesheet" href="/landing.css" />
 </head>
-<body></body>
+<body>
+
+<svg class="sr-only" aria-hidden="true">
+  <defs>
+    <linearGradient id="brand-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#16a34a" />
+      <stop offset="100%" stop-color="#14532d" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<template id="tpl-logo">
+  <svg viewBox="0 0 40 40">
+    <rect width="40" height="40" rx="10" fill="url(#brand-gradient)" />
+    <rect x="9" y="13" width="22" height="19" rx="3" fill="rgba(255,255,255,0.12)" stroke="#fff" stroke-width="2.2" />
+    <path d="M9 19h22" stroke="#fff" stroke-width="2.2" />
+    <rect x="14" y="9" width="2.6" height="7" rx="1.3" fill="#fff" />
+    <rect x="23.4" y="9" width="2.6" height="7" rx="1.3" fill="#fff" />
+    <path d="M14 25l4.5 4.5L27 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+</template>
+
+<header class="header" id="header">
+  <div class="container header-inner">
+    <a href="#topo" class="brand" aria-label="ValiStock, início">
+      <span class="logo-mark"></span>
+      <span class="brand-name">ValiStock</span>
+    </a>
+
+    <nav class="nav" id="nav" aria-label="Navegação principal">
+      <a href="#recursos">Recursos</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#planos">Planos</a>
+      <a href="#faq">FAQ</a>
+      <a href="/instalar.html">Baixar o app</a>
+      <div class="nav-cta-mobile">
+        <a href="/templates/login.html" class="btn btn-secondary btn-block">Entrar</a>
+        <a href="/templates/register.html" class="btn btn-primary btn-block">Começar grátis</a>
+      </div>
+    </nav>
+
+    <div class="header-actions">
+      <a href="/templates/login.html" class="btn btn-secondary btn-sm">Entrar</a>
+      <a href="/templates/register.html" class="btn btn-primary btn-sm">Começar grátis</a>
+      <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="nav" aria-label="Abrir menu">
+        <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="topo">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <span class="tagline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+          Menos perdas. Mais lucro.
+        </span>
+        <h1>Pare de perder dinheiro com produto vencido.</h1>
+        <p class="hero-sub">O ValiStock avisa antes de vencer, registra a perda automaticamente e mostra quanto dinheiro está em risco no seu estoque.</p>
+        <div class="hero-actions">
+          <a href="/templates/register.html" class="btn btn-primary">Começar grátis</a>
+          <a href="#planos" class="btn btn-secondary">Ver planos</a>
+        </div>
+        <p class="hero-note">Comece agora, sem compromisso.</p>
+        <a href="/instalar.html" class="hero-app-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Baixe o app para celular e computador</a>
+      </div>
+
+      <div class="hero-art">
+        <div class="product-card">
+          <div class="product-card-top">
+            <div class="product-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8M9 3v3.5L6 10v9a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-9l-3-3.5V3"/></svg>
+            </div>
+          </div>
+          <div class="product-card-heading">
+            <p class="product-card-name">Iogurte Natural 900g</p>
+            <span class="badge badge-warning"><span class="badge-dot"></span>Vence em 3 dias</span>
+          </div>
+          <p class="product-card-meta">Lote #4521 · Prateleira 3</p>
+          <div class="product-card-divider"></div>
+          <div class="product-card-row">
+            <span>Quantidade</span>
+            <span class="product-card-value">12 un</span>
+          </div>
+          <div class="product-card-row">
+            <span>Valor em risco</span>
+            <span class="product-card-risk">R$ 87,60</span>
+          </div>
+        </div>
+
+        <div class="hero-chip hero-chip-savings">
+          <span class="hero-chip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.5c0-1-1-1.7-2.5-1.7s-2.5.8-2.5 1.8c0 2.4 5 1 5 3.4 0 1-1 1.8-2.5 1.8s-2.5-.7-2.5-1.7"/></svg>
+          </span>
+          <span>
+            <span class="hero-chip-label">Economia este mês</span><br />
+            <span class="hero-chip-value">R$ 1.240</span>
+          </span>
+        </div>
+
+        <div class="hero-chip hero-chip-count">
+          <span class="hero-chip-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/></svg>
+          </span>
+          <span>
+            <span class="hero-chip-label">Produtos monitorados</span><br />
+            <span class="hero-chip-value">312</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEMA -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head">
+        <h2>Todo mês, alguma coisa vence sem ninguém perceber.</h2>
+        <p>Sem controle, a perda só aparece quando já é tarde. O ValiStock avisa antes.</p>
+      </div>
+
+      <div class="problema-grid">
+        <div class="problema-item reveal">
+          <span class="problema-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 21 19H3Z"/><path d="M12 10v4M12 16.5h.01"/></svg>
+          </span>
+          <div>
+            <h3>Planilha desatualizada</h3>
+            <p>Ninguém lembra de atualizar, e o controle vira suposição.</p>
+          </div>
+        </div>
+
+        <div class="problema-item reveal">
+          <span class="problema-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/><path d="M12 12.5v2.5M12 17.5h.01"/></svg>
+          </span>
+          <div>
+            <h3>Validade escondida na prateleira</h3>
+            <p>O produto vence no fundo do estoque e só aparece na hora de jogar fora.</p>
+          </div>
+        </div>
+
+        <div class="problema-item reveal">
+          <span class="problema-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.5c0-1-1-1.7-2.5-1.7s-2.5.8-2.5 1.8c0 2.4 5 1 5 3.4 0 1-1 1.8-2.5 1.8s-2.5-.7-2.5-1.7"/></svg>
+          </span>
+          <div>
+            <h3>Perda sem registro</h3>
+            <p>O prejuízo sai do caixa sem ninguém saber exatamente quanto nem por quê.</p>
+          </div>
+        </div>
+
+        <div class="problema-item reveal">
+          <span class="problema-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          </span>
+          <div>
+            <h3>Aviso que chega tarde</h3>
+            <p>Quando alguém percebe, o produto já venceu e a perda já aconteceu.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECURSOS -->
+  <section class="section" id="recursos">
+    <div class="container">
+      <div class="section-head">
+        <h2>Tudo que você precisa para não perder mais dinheiro.</h2>
+        <p>Cada recurso do ValiStock existe para resolver um jeito diferente de perder produto.</p>
+      </div>
+
+      <div class="recursos-grid">
+        <article class="recurso-card recurso-featured recurso-a reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/><path d="M12 12.5v2.5M12 17.5h.01"/></svg>
+          </span>
+          <h3>Alertas de validade automáticos</h3>
+          <p>Por produto e por lote. Você recebe aviso quando o produto está perto de vencer, vence hoje ou já venceu.</p>
+        </article>
+
+        <article class="recurso-card recurso-b reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          </span>
+          <h3>Notificação push de verdade</h3>
+          <p>Chega no celular ou no PC, mesmo com o site fechado.</p>
+        </article>
+
+        <article class="recurso-card recurso-c recurso-photo reveal">
+          <img src="/static/landing/scanner-produto.jpg" alt="Operadora lendo o código de barras de um produto com leitor conectado a um tablet, em uma prateleira de estoque" loading="lazy" />
+          <div class="recurso-photo-content">
+            <h3>Leitura por código de barras</h3>
+            <p>Cadastra o produto apontando a câmera do celular. Sem leitor físico.</p>
+          </div>
+        </article>
+
+        <article class="recurso-card recurso-featured recurso-d reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.5c0-1-1-1.7-2.5-1.7s-2.5.8-2.5 1.8c0 2.4 5 1 5 3.4 0 1-1 1.8-2.5 1.8s-2.5-.7-2.5-1.7"/></svg>
+          </span>
+          <h3>Registro de perdas por motivo</h3>
+          <p>Vencido, danificado, armazenamento inadequado ou erro de estoque. O valor é calculado automaticamente.</p>
+        </article>
+
+        <article class="recurso-card recurso-e reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+          </span>
+          <h3>Dashboard com valor em risco</h3>
+          <p>Veja quanto dinheiro está prestes a virar perda e quanto você já economizou.</p>
+        </article>
+
+        <article class="recurso-card recurso-f reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"/><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"/><path d="M12 8v4.5l3 2"/></svg>
+          </span>
+          <h3>Relatórios e histórico</h3>
+          <p>Consulte as perdas por período e entenda onde o dinheiro está indo embora.</p>
+        </article>
+
+        <article class="recurso-card recurso-g reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M16 8.2a3 3 0 1 1 0 5.8"/><path d="M15.5 14c2.7.3 4.5 2.2 4.5 5"/></svg>
+          </span>
+          <h3>Múltiplos usuários</h3>
+          <p>Cada funcionário com seu acesso e sua permissão, dependendo do plano.</p>
+        </article>
+
+        <article class="recurso-card recurso-featured recurso-h reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8 12 4l8.5 4-8.5 4-8.5-4Z"/><path d="M3.5 8v8L12 20l8.5-4V8"/><path d="M12 12v8"/></svg>
+          </span>
+          <h3>Fornecedores, categorias e localizações</h3>
+          <p>Organize o estoque do jeito que a sua loja funciona, com fornecedor, categoria e prateleira de cada produto.</p>
+        </article>
+
+        <article class="recurso-card recurso-i reveal">
+          <span class="recurso-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5a7.5 7.5 0 0 1 0 15Z" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <h3>Tema claro, escuro ou automático</h3>
+          <p>Personalize a cor de destaque e o tema. Um detalhe pequeno que mostra o cuidado no resto do produto.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="section section-alt" id="como-funciona">
+    <div class="container">
+      <div class="section-head">
+        <h2>Como funciona</h2>
+        <p>Do cadastro ao alerta, sem planilha e sem depender da memória de alguém.</p>
+      </div>
+
+      <div class="passos">
+        <div class="passo reveal">
+          <span class="passo-num">1</span>
+          <h3>Cadastre o produto</h3>
+          <p>Aponte a câmera para o código de barras. Validade e lote entram no sistema na hora.</p>
+          <span class="passo-connector" aria-hidden="true"></span>
+        </div>
+        <div class="passo reveal">
+          <span class="passo-num">2</span>
+          <h3>Acompanhe o painel</h3>
+          <p>Veja o que está próximo de vencer e quanto dinheiro está em risco, tudo em um lugar.</p>
+          <span class="passo-connector" aria-hidden="true"></span>
+        </div>
+        <div class="passo reveal">
+          <span class="passo-num">3</span>
+          <h3>Receba o alerta</h3>
+          <p>A notificação chega no celular ou no computador antes do produto vencer, mesmo com o site fechado.</p>
+          <span class="passo-connector" aria-hidden="true"></span>
+        </div>
+        <div class="passo reveal">
+          <span class="passo-num">4</span>
+          <h3>Registre o que perder</h3>
+          <p>Se algo vencer, o motivo e o valor ficam registrados automaticamente no relatório.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANOS -->
+  <section class="section" id="planos">
+    <div class="container">
+      <div class="section-head">
+        <h2>Um plano para cada tamanho de loja.</h2>
+        <p>Comece grátis e mude de plano quando o seu estoque crescer.</p>
+      </div>
+
+      <div class="planos-grid">
+
+        <article class="plano-card reveal">
+          <p class="plano-name">Grátis</p>
+          <div class="plano-price">
+            <span class="plano-price-value">R$0</span>
+            <span class="plano-price-period">/mês</span>
+          </div>
+          <ul class="plano-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 50 produtos</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>1 usuário</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Alertas de vencimento básicos</li>
+          </ul>
+          <a href="/templates/register.html" class="btn btn-secondary btn-block">Começar grátis</a>
+        </article>
+
+        <article class="plano-card plano-featured reveal">
+          <span class="plano-badge">Mais escolhido</span>
+          <p class="plano-name">Essencial</p>
+          <div class="plano-price">
+            <span class="plano-price-value">R$29<small>,90</small></span>
+            <span class="plano-price-period">/mês</span>
+          </div>
+          <ul class="plano-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 300 produtos</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 3 usuários</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Gestão de fornecedores</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Dashboard personalizável</li>
+          </ul>
+          <a href="/templates/register.html" class="btn btn-primary btn-block">Assinar Essencial</a>
+        </article>
+
+        <article class="plano-card reveal">
+          <p class="plano-name">Profissional</p>
+          <div class="plano-price">
+            <span class="plano-price-value">R$59<small>,90</small></span>
+            <span class="plano-price-period">/mês</span>
+          </div>
+          <ul class="plano-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 1.500 produtos</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 10 usuários</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Relatórios avançados</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Campos personalizados</li>
+          </ul>
+          <a href="/templates/register.html" class="btn btn-secondary btn-block">Assinar Profissional</a>
+        </article>
+
+        <article class="plano-card reveal">
+          <p class="plano-name">Empresa</p>
+          <div class="plano-price">
+            <span class="plano-price-value">R$119<small>,90</small></span>
+            <span class="plano-price-period">/mês</span>
+          </div>
+          <ul class="plano-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Produtos ilimitados</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Até 25 usuários</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Auditoria completa</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Permissões avançadas</li>
+          </ul>
+          <a href="/templates/register.html" class="btn btn-secondary btn-block">Assinar Empresa</a>
+        </article>
+
+        <article class="plano-card reveal">
+          <p class="plano-name">Rede</p>
+          <p class="plano-cta-value">Fale conosco</p>
+          <ul class="plano-features">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Múltiplas unidades</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Produtos e usuários ilimitados</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>Atendimento dedicado</li>
+          </ul>
+          <a href="mailto:valistockcontact@gmail.com?subject=Plano Rede ValiStock" class="btn btn-secondary btn-block">Falar com a gente</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section-alt" id="faq">
+    <div class="container">
+      <div class="section-head">
+        <h2>Perguntas frequentes</h2>
+        <p>O que os donos de loja mais perguntam antes de começar.</p>
+      </div>
+
+      <div class="faq-list">
+        <details class="faq-item reveal">
+          <summary>O ValiStock tem aplicativo?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Sim. Você instala o ValiStock direto pelo navegador, no celular (Android e iPhone) ou no computador, sem passar por loja de aplicativos. <a href="/instalar.html">Veja como instalar</a>.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Preciso comprar um leitor de código de barras?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Não. A câmera do celular já lê o código de barras na hora de cadastrar o produto.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Recebo o alerta mesmo com o site fechado?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Sim. A notificação push chega no celular ou no computador mesmo com o navegador fechado.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Quantos produtos posso cadastrar no plano grátis?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Até 50 produtos, com 1 usuário e alertas de vencimento básicos. Sem custo.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Posso mudar de plano depois?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Sim. Você faz upgrade ou downgrade quando quiser, direto de dentro do painel.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Como funciona o registro de perdas?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">Você escolhe o motivo (vencido, danificado, armazenamento inadequado ou erro de estoque) e o valor da perda é calculado automaticamente.</p>
+        </details>
+
+        <details class="faq-item reveal">
+          <summary>Como funciona o plano Rede?
+            <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </summary>
+          <p class="faq-answer">É para redes com múltiplas unidades, produtos e usuários ilimitados, com atendimento dedicado. É só falar com a gente.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final">
+    <div class="container cta-final-inner">
+      <div>
+        <h2>Cada produto vencido é dinheiro que já saiu do seu bolso.</h2>
+        <p>Comece grátis agora e veja quanto está em risco no seu estoque hoje mesmo.</p>
+      </div>
+      <a href="/templates/register.html" class="btn btn-secondary">Começar grátis</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a href="#topo" class="brand" aria-label="ValiStock, início">
+        <span class="logo-mark"></span>
+        <span class="brand-name">ValiStock</span>
+      </a>
+      <p>Controle de validade e perdas para mercados, padarias e pequenos estabelecimentos alimentícios.</p>
+    </div>
+
+    <nav class="footer-links" aria-label="Produto">
+      <span class="footer-heading">Produto</span>
+      <a href="#recursos">Recursos</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#planos">Planos</a>
+      <a href="#faq">FAQ</a>
+      <a href="/instalar.html">Baixar o app</a>
+    </nav>
+
+    <nav class="footer-links" aria-label="Empresa">
+      <span class="footer-heading">Empresa</span>
+      <a href="mailto:valistockcontact@gmail.com">Contato</a>
+      <a href="/templates/login.html">Entrar</a>
+      <a href="/templates/register.html">Criar conta</a>
+      <a href="/templates/termos.html">Termos de Uso</a>
+      <a href="/templates/privacidade.html">Política de Privacidade</a>
+    </nav>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>© 2026 ValiStock. Todos os direitos reservados.</p>
+    <p>valistockcontact@gmail.com</p>
+  </div>
+</footer>
+
+<script src="/landing.js"></script>
+</body>
 </html>
